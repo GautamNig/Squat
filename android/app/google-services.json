@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "256669154700",
+    "project_id": "squat-c1feb",
+    "storage_bucket": "squat-c1feb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256669154700:android:d3e4a2d2389a15048aeaa9",
+        "android_client_info": {
+          "package_name": "com.apptheatre.squat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "256669154700-kfljurdsqg934dg1nvd5i6mvdn86u0pm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.apptheatre.squat",
+            "certificate_hash": "0afef15d7fa38711bf05449610cd3b5f9c8b3462"
+          }
+        },
+        {
+          "client_id": "256669154700-oi2mivqv4jvbkt4fvk48j0t4k16t81i9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVO2uAiNGKqrpDbRIIF5O7zzCh5QwnOfY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "256669154700-oi2mivqv4jvbkt4fvk48j0t4k16t81i9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
