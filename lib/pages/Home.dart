@@ -8,9 +8,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rive/rive.dart';
 import 'package:squat/pages/comments.dart';
+import 'package:squat/pages/squat_stat.dart';
 import 'package:squat/pages/squats.dart';
 import '../models/user.dart';
 import 'create_account.dart';
+import 'package:badges/badges.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final usersRef = FirebaseFirestore.instance.collection('users');
@@ -18,7 +20,7 @@ final commentsRef = FirebaseFirestore.instance.collection('comments');
 final squatsRef = FirebaseFirestore.instance.collection('squats');
 final DateTime timestamp = DateTime.now();
 
-User? currentUser;
+late User currentUser;
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -36,6 +38,7 @@ class _HomeState extends State<Home> {
   SMIInput<bool>? _trigger;
   Artboard? _startArtBoard;
   late RiveAnimationController squatAnimationController;
+  int squatCount = 0;
 
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   final List<_PositionItem> _positionItems = <_PositionItem>[];
@@ -76,10 +79,19 @@ class _HomeState extends State<Home> {
       print('Error signing in : $err');
     });
 
-    loadDataAsync();
+    usersRef.snapshots().listen((querySnapshot) {
+      squatCount = querySnapshot.docs.where((doc) => User.fromDocument(doc).hasSquated == true).length;
+    });
+
+    getLocationAndSetupRive();
   }
 
-  Future loadDataAsync() async {
+  @override
+  Widget build(BuildContext context) {
+    return isAuth ? buildAuthScreen() : buildUnAuthScreen();
+  }
+
+  Future getLocationAndSetupRive() async {
     await getUserLocation();
     rootBundle.load('assets/rives/squat.riv').then((data) {
       final file = RiveFile.import(data);
@@ -94,73 +106,6 @@ class _HomeState extends State<Home> {
         _startArtBoard = artBoard;
       });
     });
-  }
-
-  static Future cacheImage(BuildContext context, String urlImage) {
-    if (urlImage.isNotEmpty)
-      return precacheImage(CachedNetworkImageProvider(urlImage), context);
-    return Future.value();
-  }
-
-  handleSignIn(GoogleSignInAccount? account) async {
-    if (account != null) {
-      await createUserInFirestore();
-      setState(() {
-        isAuth = true;
-      });
-    } else {
-      setState(() {
-        isAuth = false;
-      });
-    }
-  }
-
-  createUserInFirestore() async {
-    // 1) check if user exists in users collection in database (according to their id)
-    final GoogleSignInAccount? user = googleSignIn.currentUser;
-    DocumentSnapshot doc = await usersRef.doc(user?.id).get();
-
-    if (!doc.exists) {
-      // 2) if the user doesn't exist, then we want to take them to the create account page
-      final username = await Navigator.push(
-          context, MaterialPageRoute(builder: (context) => CreateAccount()));
-
-      // 3) get username from create account, use it to make new user document in users collection
-      usersRef.doc(user?.id).set({
-        "id": user?.id,
-        "username": username,
-        "photoUrl": user?.photoUrl,
-        "email": user?.email,
-        "displayName": user?.displayName,
-        "bio": "",
-        "timestamp": timestamp,
-        "hasSquated": false,
-      });
-      doc = await usersRef.doc(user?.id).get();
-    }
-    currentUser = User.fromDocument(doc);
-    cacheImage(context, currentUser?.photoUrl ?? '');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return isAuth ? buildAuthScreen() : buildUnAuthScreen();
-  }
-
-  addSquat() {
-    squatsRef.add({
-      "username": currentUser?.username,
-      "timestamp": timestamp,
-      "avatarUrl": currentUser?.photoUrl,
-      "userId": currentUser?.id,
-      "locality": squatLocality,
-      "country": squatCountry,
-    });
-  }
-
-  void _updatePositionList(_PositionItemType type, String displayValue) {
-    _positionItems.add(_PositionItem(type, displayValue));
-    setState(() {});
   }
 
   getUserLocation() async {
@@ -181,6 +126,19 @@ class _HomeState extends State<Home> {
     Placemark placemark = placemarks[0];
     squatLocality = placemark.locality ?? '';
     squatCountry = placemark.country ?? '';
+  }
+
+  handleSignIn(GoogleSignInAccount? account) async {
+    if (account != null) {
+      await createUserInFirestore();
+      setState(() {
+        isAuth = true;
+      });
+    } else {
+      setState(() {
+        isAuth = false;
+      });
+    }
   }
 
   Future<bool?> _handlePermission() async {
@@ -238,6 +196,55 @@ class _HomeState extends State<Home> {
     googleSignIn.signOut();
   }
 
+  createUserInFirestore() async {
+    // 1) check if user exists in users collection in database (according to their id)
+    final GoogleSignInAccount? user = googleSignIn.currentUser;
+    DocumentSnapshot doc = await usersRef.doc(user?.id).get();
+
+    if (!doc.exists) {
+      // 2) if the user doesn't exist, then we want to take them to the create account page
+      final username = await Navigator.push(
+          context, MaterialPageRoute(builder: (context) => CreateAccount()));
+
+      // 3) get username from create account, use it to make new user document in users collection
+      usersRef.doc(user?.id).set({
+        "id": user?.id,
+        "username": username,
+        "photoUrl": user?.photoUrl,
+        "email": user?.email,
+        "displayName": user?.displayName,
+        "bio": "",
+        "timestamp": timestamp,
+        "hasSquated": false,
+      });
+      doc = await usersRef.doc(user?.id).get();
+    }
+    currentUser = User.fromDocument(doc);
+    cacheImage(context, currentUser?.photoUrl ?? '');
+  }
+
+  addSquat() {
+    squatsRef.add({
+      "username": currentUser?.username,
+      "timestamp": timestamp,
+      "avatarUrl": currentUser?.photoUrl,
+      "userId": currentUser?.id,
+      "locality": squatLocality,
+      "country": squatCountry,
+    });
+  }
+
+  void _updatePositionList(_PositionItemType type, String displayValue) {
+    _positionItems.add(_PositionItem(type, displayValue));
+    setState(() {});
+  }
+
+  static Future cacheImage(BuildContext context, String urlImage) {
+    if (urlImage.isNotEmpty)
+      return precacheImage(CachedNetworkImageProvider(urlImage), context);
+    return Future.value();
+  }
+
   Scaffold buildAuthScreen() {
     var id = currentUser == null ? '' : currentUser?.id;
     return Scaffold(
@@ -247,7 +254,8 @@ class _HomeState extends State<Home> {
             // Timeline(),
             _startArtBoard == null
                 ? const SizedBox()
-                : Stack(alignment: Alignment.center, children: [
+                : Stack(alignment: Alignment.center, children: 
+                  [
                     Rive(
                       artboard: _startArtBoard!,
                       fit: BoxFit.fill,
@@ -255,12 +263,16 @@ class _HomeState extends State<Home> {
                     Positioned(
                       top: 5,
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: currentUser.hasSquated ? null : () async {
                           _trigger?.value = true;
                           addSquat();
-                          usersRef
+                          await usersRef
                               .doc(currentUser?.id)
                               .update({"hasSquated": true});
+                          var doc = await usersRef.doc(googleSignIn.currentUser?.id).get();
+                          setState(() {
+                            currentUser = User.fromDocument(doc);
+                          });
                         },
                         child: const Text(
                           'Squat for Ukraine',
@@ -281,9 +293,15 @@ class _HomeState extends State<Home> {
                         icon: const Icon(Icons.logout_sharp),
                       ),
                     ),
+                    Positioned(
+                      bottom: 2,
+                      child: Text('Lumberjack Squats by Dante @rive.app', style: TextStyle(color: Colors.black,
+                      fontSize: 8),)
+                    ),
                   ]),
             Comments(userId: id!),
             Squats(),
+            SquatStat()
             // ActivityFeed(),
             // Upload(currentUser:currentUser),
             // Search(),
@@ -299,13 +317,18 @@ class _HomeState extends State<Home> {
         onTap: onTap,
         activeColor: Theme.of(context).primaryColor,
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.whatshot)),
+          BottomNavigationBarItem(icon: Badge(child: Icon(Icons.whatshot),
+              shape: BadgeShape.square,
+              position: BadgePosition.bottomEnd(bottom: -15),
+              badgeContent:
+          Text(squatCount.toString(), style: const TextStyle(color: Colors.white),))),
           BottomNavigationBarItem(
               icon: Icon(
             Icons.comment_bank_outlined,
             size: 35,
           )),
           BottomNavigationBarItem(icon: Icon(Icons.notifications_active)),
+          BottomNavigationBarItem(icon: Icon(Icons.stacked_bar_chart)),
           // BottomNavigationBarItem(icon: Icon(Icons.search)),
           // BottomNavigationBarItem(icon: Icon(Icons.account_circle)),
         ],

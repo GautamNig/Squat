@@ -14,23 +14,26 @@ class Squats extends StatefulWidget {
 class _SquatsState extends State<Squats> {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-        stream: squatsRef
-            .orderBy("timestamp", descending: false)
-            .snapshots(),
-        builder: (context, AsyncSnapshot snapshot) {
-          if (!snapshot.hasData) {
-            return circularProgress();
-          }
-          List<Squat> squats = [];
-          snapshot.data.docs.forEach((doc) {
-            print(doc);
-            squats.add(Squat.fromDocument(doc));
-          });
-          return ListView(
-            children: squats,
-          );
-        });
+    return Scaffold(
+        appBar: header(context, titleText: "Squatters"),
+      body: StreamBuilder(
+          stream: squatsRef
+              .orderBy("timestamp", descending: true)
+              .snapshots(),
+          builder: (context, AsyncSnapshot snapshot) {
+            if (!snapshot.hasData) {
+              return circularProgress();
+            }
+            List<Squat> squats = [];
+            snapshot.data.docs.forEach((doc) {
+              print(doc);
+              squats.add(Squat.fromDocument(doc));
+            });
+            return ListView(
+              children: squats,
+            );
+          }),
+    );
   }
 }
 
@@ -67,11 +70,12 @@ class Squat extends StatelessWidget {
     return Column(
       children: <Widget>[
         ListTile(
-          title: Text('A new squat done by $username\n$locality $country\n'),
+          title: Text('$username\n$locality $country\n'),
           leading: CircleAvatar(
             backgroundImage: CachedNetworkImageProvider(avatarUrl),
           ),
           subtitle: Text(timeago.format(timestamp.toDate())),
+            trailing: const Icon(Icons.location_pin)
         ),
         const Divider(),
       ],

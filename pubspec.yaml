@@ -26,6 +26,10 @@ dependencies:
   firebase_core: ^1.12.0
   geocoding: 2.0.2
   rive: ^0.8.1
+  badges: ^2.0.2
+  grouped_list: ^4.2.0
+  syncfusion_flutter_charts: ^19.4.54
+  collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:
