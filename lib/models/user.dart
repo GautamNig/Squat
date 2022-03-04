@@ -7,6 +7,7 @@ class User {
   final String photoUrl;
   final String displayName;
   final String bio;
+  final bool hasSquated;
 
   User({
     required this.id,
@@ -15,6 +16,7 @@ class User {
     required this.photoUrl,
     required this.displayName,
     required this.bio,
+    required this.hasSquated,
   });
 
   factory User.fromDocument(DocumentSnapshot doc) {
@@ -25,6 +27,7 @@ class User {
       photoUrl: doc['photoUrl'],
       displayName: doc['displayName'],
       bio: doc['bio'],
+      hasSquated: doc['hasSquated'],
     );
   }
 }

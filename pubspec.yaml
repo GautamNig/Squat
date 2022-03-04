@@ -40,6 +40,7 @@ flutter:
         - asset: assets/fonts/Signatra.ttf
   assets:
     - assets/images/google_signin_button.png
+    - assets/images/soilder.jpg
     - assets/images/upload.svg
     - assets/images/search.svg
     - assets/images/no_content.svg
