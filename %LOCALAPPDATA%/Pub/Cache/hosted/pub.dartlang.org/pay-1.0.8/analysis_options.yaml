@@ -1,0 +1,6 @@
+include: package:pedantic/analysis_options.1.11.0.yaml
+
+linter:
+  rules:
+    - avoid_annotating_with_dynamic
+    - prefer_const_constructors

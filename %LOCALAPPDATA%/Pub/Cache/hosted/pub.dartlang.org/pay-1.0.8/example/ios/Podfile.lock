@@ -1,0 +1,28 @@
+PODS:
+  - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+  - pay_ios (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - pay_ios (from `.symlinks/plugins/pay_ios/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  pay_ios:
+    :path: ".symlinks/plugins/pay_ios/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  integration_test: 7db6d89f336f671dcbc7563ee27a5b08f6f8aee1
+  pay_ios: 8c7beb9c61d885f3f51b61f75f8793023fc8843a
+
+PODFILE CHECKSUM: fc81e398f362bae88bdf55239bd5cf842faad39f
+
+COCOAPODS: 1.11.0

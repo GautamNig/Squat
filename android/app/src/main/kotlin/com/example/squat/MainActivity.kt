@@ -1,4 +1,4 @@
-package com.example.squat
+package com.apptheatre.squat
 
 import io.flutter.embedding.android.FlutterActivity
 

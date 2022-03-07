@@ -59,7 +59,7 @@ class _SquatStatState extends State<SquatStat> {
                     dataSource: squatDataList,
                     xValueMapper: (SquatData sales, _) => sales.country,
                     yValueMapper: (SquatData sales, _) => sales.squats,
-                    dataLabelSettings: const DataLabelSettings(isVisible : true, textStyle: const TextStyle(fontFamily: "Signatra",
+                    dataLabelSettings: const DataLabelSettings(isVisible : true, textStyle: TextStyle(fontFamily: "Signatra",
                       fontSize: 18,),)
                 )
               ]);

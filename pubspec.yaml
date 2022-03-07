@@ -30,6 +30,12 @@ dependencies:
   grouped_list: ^4.2.0
   syncfusion_flutter_charts: ^19.4.54
   collection: ^1.15.0
+  flutter_launcher_icons: ^0.9.2
+  flutter_native_splash: ^2.0.5
+  flutter_braintree: ^2.3.1
+  http: ^0.13.4
+  pay: ^1.0.8
+  http_auth: ^1.0.1
 
 dev_dependencies:
   flutter_test:
@@ -49,3 +55,12 @@ flutter:
     - assets/images/search.svg
     - assets/images/no_content.svg
     - assets/rives/squat.riv
+    - assets/default_payment_profile_google_pay.json
+
+#flutter_icons:
+#  image_path: "assets/world_travel.png"
+#  android: true
+#  iOS: true
+flutter_native_splash:
+  color: "978966"
+  image: assets/images/squat.png

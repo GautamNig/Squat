@@ -5,7 +5,7 @@ AppBar header(context,
   return AppBar(
     automaticallyImplyLeading: removeBackButton ? false : true,
     title: Text(
-      isAppTitle ? "Ukranian Squat" : titleText ?? '',
+      isAppTitle ? "Squat" : titleText ?? '',
       style: TextStyle(
         color: Colors.white,
         fontFamily: isAppTitle ? "Signatra" : "",

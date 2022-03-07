@@ -8,6 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rive/rive.dart';
 import 'package:squat/pages/comments.dart';
+import 'package:squat/pages/payment.dart';
 import 'package:squat/pages/squat_stat.dart';
 import 'package:squat/pages/squats.dart';
 import '../models/user.dart';
@@ -229,8 +230,8 @@ class _HomeState extends State<Home> {
       "timestamp": timestamp,
       "avatarUrl": currentUser?.photoUrl,
       "userId": currentUser?.id,
-      "locality": squatLocality,
-      "country": squatCountry,
+      "locality": squatLocality.isEmpty ? 'Unknown' : squatLocality,
+      "country": squatCountry.isEmpty ? 'Unknown' : squatCountry,
     });
   }
 
@@ -301,7 +302,8 @@ class _HomeState extends State<Home> {
                   ]),
             Comments(userId: id!),
             Squats(),
-            SquatStat()
+            SquatStat(),
+            Payment()
             // ActivityFeed(),
             // Upload(currentUser:currentUser),
             // Search(),
@@ -329,6 +331,7 @@ class _HomeState extends State<Home> {
           )),
           BottomNavigationBarItem(icon: Icon(Icons.notifications_active)),
           BottomNavigationBarItem(icon: Icon(Icons.stacked_bar_chart)),
+          BottomNavigationBarItem(icon: Icon(Icons.monetization_on_sharp)),
           // BottomNavigationBarItem(icon: Icon(Icons.search)),
           // BottomNavigationBarItem(icon: Icon(Icons.account_circle)),
         ],
