@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'pages/Home.dart';
 
@@ -7,7 +9,21 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   timeago.setLocaleMessages('en', timeago.EnMessages());
   timeago.setLocaleMessages('en_short', timeago.EnShortMessages());
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await Firebase.initializeApp();
+  EasyLoading.instance
+    ..displayDuration = const Duration(milliseconds: 2000)
+    ..indicatorType = EasyLoadingIndicatorType.wanderingCubes
+    ..loadingStyle = EasyLoadingStyle.dark
+    ..indicatorSize = 45.0
+    ..radius = 10.0
+    ..progressColor = Colors.black
+    ..backgroundColor = Colors.white
+    ..indicatorColor = Colors.yellow
+    ..textColor = Colors.yellow
+    ..maskColor = Colors.blue.withOpacity(0.8)
+    ..userInteractions = false
+    ..dismissOnTap = false;
   runApp(MyApp());
 }
 
@@ -27,6 +43,7 @@ class MyApp extends StatelessWidget {
           secondary: Colors.teal,),
       ),
       home: const Home(),
+      builder: EasyLoading.init(),
     );
   }
 }

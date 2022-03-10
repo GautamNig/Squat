@@ -36,6 +36,8 @@ dependencies:
   http: ^0.13.4
   pay: ^1.0.8
   http_auth: ^1.0.1
+  flutter_easyloading: ^3.0.3
+  webview_flutter: ^3.0.1
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +52,7 @@ flutter:
         - asset: assets/fonts/Signatra.ttf
   assets:
     - assets/images/google_signin_button.png
+    - assets/images/paypal.png
     - assets/images/soilder.jpg
     - assets/images/upload.svg
     - assets/images/search.svg

@@ -49,16 +49,17 @@ class _PaymentState extends State<Payment> {
           Padding(
             padding: const EdgeInsets.all(18.0),
             child: TextField(
+              onChanged: (text) => setState(() => ''),
               controller: amountTextEditingController,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.monetization_on_outlined, color: Colors.grey),
-                hintText: 'Confirm Password',
-                errorText: isNumeric(amountTextEditingController.text) == true ? null : 'Please enter a numeric value.',
-                contentPadding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+                hintText: 'Payment in USD',
+                errorText: isNumeric(amountTextEditingController.text) == true ? null : 'Please enter a numeric value to donate.',
+                contentPadding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0,0),
               ),
             ),
           ),
-          ElevatedButton(onPressed: () async{
+          ElevatedButton(onPressed: isNumeric(amountTextEditingController.text) == false ? null :() async{
             var request = BraintreeDropInRequest(
               tokenizationKey: 'sandbox_7b3tw3qt_qr37trqc9mxpmkd9',
               collectDeviceData: true,
@@ -80,7 +81,6 @@ class _PaymentState extends State<Payment> {
                final payResult = jsonDecode(response.body);
                print(payResult['result']);
                if(payResult['result'] == 'success'){
-
                   print('Payment done.');
                }
             }

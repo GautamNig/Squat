@@ -3,11 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rive/rive.dart';
 import 'package:squat/pages/comments.dart';
+import 'package:squat/pages/donation.dart';
 import 'package:squat/pages/payment.dart';
 import 'package:squat/pages/squat_stat.dart';
 import 'package:squat/pages/squats.dart';
@@ -189,8 +191,10 @@ class _HomeState extends State<Home> {
     }
   }
 
-  login() {
-    googleSignIn.signIn();
+  login() async {
+    EasyLoading.show();
+    await googleSignIn.signIn();
+    EasyLoading.dismiss();
   }
 
   logout() {
@@ -221,15 +225,15 @@ class _HomeState extends State<Home> {
       doc = await usersRef.doc(user?.id).get();
     }
     currentUser = User.fromDocument(doc);
-    cacheImage(context, currentUser?.photoUrl ?? '');
+    cacheImage(context, currentUser.photoUrl ?? '');
   }
 
   addSquat() {
     squatsRef.add({
-      "username": currentUser?.username,
+      "username": currentUser.username,
       "timestamp": timestamp,
-      "avatarUrl": currentUser?.photoUrl,
-      "userId": currentUser?.id,
+      "avatarUrl": currentUser.photoUrl,
+      "userId": currentUser.id,
       "locality": squatLocality.isEmpty ? 'Unknown' : squatLocality,
       "country": squatCountry.isEmpty ? 'Unknown' : squatCountry,
     });
@@ -247,7 +251,6 @@ class _HomeState extends State<Home> {
   }
 
   Scaffold buildAuthScreen() {
-    var id = currentUser == null ? '' : currentUser?.id;
     return Scaffold(
       body: SafeArea(
         child: PageView(
@@ -264,16 +267,21 @@ class _HomeState extends State<Home> {
                     Positioned(
                       top: 5,
                       child: ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+                        ),
                         onPressed: currentUser.hasSquated ? null : () async {
+                          EasyLoading.show();
                           _trigger?.value = true;
                           addSquat();
                           await usersRef
-                              .doc(currentUser?.id)
+                              .doc(currentUser.id)
                               .update({"hasSquated": true});
                           var doc = await usersRef.doc(googleSignIn.currentUser?.id).get();
                           setState(() {
                             currentUser = User.fromDocument(doc);
                           });
+                          EasyLoading.dismiss();
                         },
                         child: const Text(
                           'Squat for Ukraine',
@@ -291,23 +299,23 @@ class _HomeState extends State<Home> {
                         onPressed: () {
                           googleSignIn.signOut();
                         },
-                        icon: const Icon(Icons.logout_sharp),
+                        icon: const Icon(Icons.logout_sharp, color: Colors.teal,),
                       ),
                     ),
-                    Positioned(
+                    const Positioned(
                       bottom: 2,
                       child: Text('Lumberjack Squats by Dante @rive.app', style: TextStyle(color: Colors.black,
                       fontSize: 8),)
                     ),
                   ]),
-            Comments(userId: id!),
+            Comments(userId: currentUser.id),
             Squats(),
             SquatStat(),
-            Payment()
+            Donation()
             // ActivityFeed(),
             // Upload(currentUser:currentUser),
             // Search(),
-            // Profile(profileId: currentUser?.id ?? '')
+            // Profile(profileId: currentUser.id ?? '')
           ],
           controller: pageController,
           onPageChanged: onPageChanged,
@@ -319,19 +327,19 @@ class _HomeState extends State<Home> {
         onTap: onTap,
         activeColor: Theme.of(context).primaryColor,
         items: [
-          BottomNavigationBarItem(icon: Badge(child: Icon(Icons.whatshot),
+          BottomNavigationBarItem(icon: Badge(child: const Icon(Icons.whatshot),
               shape: BadgeShape.square,
               position: BadgePosition.bottomEnd(bottom: -15),
               badgeContent:
           Text(squatCount.toString(), style: const TextStyle(color: Colors.white),))),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
               icon: Icon(
             Icons.comment_bank_outlined,
             size: 35,
           )),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications_active)),
-          BottomNavigationBarItem(icon: Icon(Icons.stacked_bar_chart)),
-          BottomNavigationBarItem(icon: Icon(Icons.monetization_on_sharp)),
+          const BottomNavigationBarItem(icon: Icon(Icons.notifications_active)),
+          const BottomNavigationBarItem(icon: Icon(Icons.stacked_bar_chart)),
+          const BottomNavigationBarItem(icon: Icon(Icons.monetization_on_sharp)),
           // BottomNavigationBarItem(icon: Icon(Icons.search)),
           // BottomNavigationBarItem(icon: Icon(Icons.account_circle)),
         ],
@@ -350,7 +358,7 @@ class _HomeState extends State<Home> {
             const Text(
               'Squat for Ukraine',
               style: TextStyle(
-                  fontFamily: "Signatra", fontSize: 70, color: Colors.black),
+                  fontFamily: "Signatra", fontSize: 50, color: Colors.black),
             ),
             GestureDetector(
               onTap: login,

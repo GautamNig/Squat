@@ -3,6 +3,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:squat/pages/squats.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+
 import '../widgets/progress.dart';
 import 'Home.dart';
 
@@ -30,7 +31,6 @@ class _SquatStatState extends State<SquatStat> {
           // );
 
           List<SquatData> squatDataList = [];
-          // List<Squat> squats = [];
 
           var newMap = groupBy(
               snapshot.data!.docs,
@@ -41,9 +41,20 @@ class _SquatStatState extends State<SquatStat> {
             squatDataList.add(SquatData(key, value.length));
           });
 
+          squatDataList.sort((a, b) => b.squats.compareTo(a.squats));
+
+          if (squatDataList.length > 5) {
+            squatDataList = squatDataList.take(5).toList();
+          }
+
           return SfCircularChart(
-              title: ChartTitle(text: 'Squats by Country', textStyle: const TextStyle(fontFamily: "Signatra",
-                fontSize: 30,)),
+              title: ChartTitle(
+                  text: 'Squats by Country',
+                  textStyle: const TextStyle(
+                    fontFamily: "Signatra",
+                    fontSize: 30,
+                    color: Colors.teal
+                  ),),
               legend: Legend(isVisible: true),
               // Initialize category axis
               series: <CircularSeries>[
@@ -59,9 +70,13 @@ class _SquatStatState extends State<SquatStat> {
                     dataSource: squatDataList,
                     xValueMapper: (SquatData sales, _) => sales.country,
                     yValueMapper: (SquatData sales, _) => sales.squats,
-                    dataLabelSettings: const DataLabelSettings(isVisible : true, textStyle: TextStyle(fontFamily: "Signatra",
-                      fontSize: 18,),)
-                )
+                    dataLabelSettings: const DataLabelSettings(
+                      isVisible: true,
+                      textStyle: TextStyle(
+                        fontFamily: "Signatra",
+                        fontSize: 18,
+                      ),
+                    ))
               ]);
         });
   }

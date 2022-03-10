@@ -26,7 +26,6 @@ class _SquatsState extends State<Squats> {
             }
             List<Squat> squats = [];
             snapshot.data.docs.forEach((doc) {
-              print(doc);
               squats.add(Squat.fromDocument(doc));
             });
             return ListView(
