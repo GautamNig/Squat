@@ -1,0 +1,12 @@
+name: auth_header
+description: Utility library to parse and manipulate HTTP Authorisation header
+version: 3.0.1
+homepage: http://jaguar-dart.github.io
+
+documentation:
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dev_dependencies:
+  test: ^1.3.0

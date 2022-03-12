@@ -13,6 +13,7 @@ import 'package:squat/pages/donation.dart';
 import 'package:squat/pages/payment.dart';
 import 'package:squat/pages/squat_stat.dart';
 import 'package:squat/pages/squats.dart';
+import '../helpers/Constants.dart';
 import '../models/user.dart';
 import 'create_account.dart';
 import 'package:badges/badges.dart';
@@ -21,6 +22,7 @@ final GoogleSignIn googleSignIn = GoogleSignIn();
 final usersRef = FirebaseFirestore.instance.collection('users');
 final commentsRef = FirebaseFirestore.instance.collection('comments');
 final squatsRef = FirebaseFirestore.instance.collection('squats');
+final settingsRef = FirebaseFirestore.instance.collection('settings');
 final DateTime timestamp = DateTime.now();
 
 late User currentUser;
@@ -133,6 +135,11 @@ class _HomeState extends State<Home> {
 
   handleSignIn(GoogleSignInAccount? account) async {
     if (account != null) {
+      account.authentication.then((result){
+        }).catchError((err){
+          print('inner error');
+        });
+
       await createUserInFirestore();
       setState(() {
         isAuth = true;
@@ -193,7 +200,14 @@ class _HomeState extends State<Home> {
 
   login() async {
     EasyLoading.show();
-    await googleSignIn.signIn();
+    await googleSignIn.signIn().then((result){
+      result?.authentication.then((googleKey){
+      }).catchError((err){
+        print('inner error');
+      });
+    }).catchError((err){
+      print('error occured');
+    });
     EasyLoading.dismiss();
   }
 

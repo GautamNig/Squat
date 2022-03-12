@@ -38,7 +38,8 @@ dependencies:
   http_auth: ^1.0.1
   flutter_easyloading: ^3.0.3
   webview_flutter: ^3.0.1
-
+  jaguar_jwt: ^3.0.0
+  cloud_functions: ^3.2.8
 dev_dependencies:
   flutter_test:
     sdk: flutter

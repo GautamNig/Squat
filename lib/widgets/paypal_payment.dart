@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+
+import '../helpers/Constants.dart';
 
 class PaypalPayment extends StatelessWidget {
   final double amount;
@@ -9,7 +12,7 @@ class PaypalPayment extends StatelessWidget {
   const PaypalPayment({Key? key, required this.amount, required this.currency})
       : super(key: key);
 
-  final String jwt = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImQ2M2RiZTczYWFkODhjODU0ZGUwZDhkNmMwMTRjMzZkYzI1YzQyOTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiNjE4MTA0NzA4MDU0LTlyOXMxYzRhbGczNmVybGl1Y2hvOXQ1Mm4zMm42ZGdxLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiNjE4MTA0NzA4MDU0LTlyOXMxYzRhbGczNmVybGl1Y2hvOXQ1Mm4zMm42ZGdxLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTAzNDM0MDEzNzc5NTU0MDU4NzA3IiwiZW1haWwiOiJuaWdhbS5uZWVydWJhbGFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJtTHBENkd4Z0hzTVc4NXdzMldzMVZRIiwiaWF0IjoxNjQ2ODg0MTYzLCJleHAiOjE2NDY4ODc3NjMsImp0aSI6ImM1MTliMjA4YTJlZWJkYzJhOWZkYWY2OWE1ZWFjNzFhYjkwZDQwZjAifQ.lg7JzSuMAAole7rrdhERT61TFzC1qUw60v4by9jdvB_Pq2CyawMK0-uaB02PtCAxQ_R3vuJ7E0HcfZ9LkxAggoJflUYR-9fgGc2MA2EFdYIgL7J-woCMUetY1pe7TY_2vOriNV0UQ3rjtb0-HzaaaxW-6D_bbSsdInII-OAh7z7UlFOya0WEob1i3PV7I86Zn2EWdIrFD_M0AUCNGUlfvJxw1-3XCJNWVplbA5I1AAEZ3qIyvymrwqlE0-oeEw8BN9HP64j3HIQ0ZSB81iKE4HRCF2-Cw4NXl1TlM2PGgPW-eCqLTBDC3_Yk-oQRzzpRJxBRxOnyMw5YBNkgFGw8fQ';
+  // final String jwt = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImQ2M2RiZTczYWFkODhjODU0ZGUwZDhkNmMwMTRjMzZkYzI1YzQyOTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiNjE4MTA0NzA4MDU0LTlyOXMxYzRhbGczNmVybGl1Y2hvOXQ1Mm4zMm42ZGdxLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiNjE4MTA0NzA4MDU0LTlyOXMxYzRhbGczNmVybGl1Y2hvOXQ1Mm4zMm42ZGdxLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTAzNDM0MDEzNzc5NTU0MDU4NzA3IiwiZW1haWwiOiJuaWdhbS5uZWVydWJhbGFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJtTHBENkd4Z0hzTVc4NXdzMldzMVZRIiwiaWF0IjoxNjQ2ODg0MTYzLCJleHAiOjE2NDY4ODc3NjMsImp0aSI6ImM1MTliMjA4YTJlZWJkYzJhOWZkYWY2OWE1ZWFjNzFhYjkwZDQwZjAifQ.lg7JzSuMAAole7rrdhERT61TFzC1qUw60v4by9jdvB_Pq2CyawMK0-uaB02PtCAxQ_R3vuJ7E0HcfZ9LkxAggoJflUYR-9fgGc2MA2EFdYIgL7J-woCMUetY1pe7TY_2vOriNV0UQ3rjtb0-HzaaaxW-6D_bbSsdInII-OAh7z7UlFOya0WEob1i3PV7I86Zn2EWdIrFD_M0AUCNGUlfvJxw1-3XCJNWVplbA5I1AAEZ3qIyvymrwqlE0-oeEw8BN9HP64j3HIQ0ZSB81iKE4HRCF2-Cw4NXl1TlM2PGgPW-eCqLTBDC3_Yk-oQRzzpRJxBRxOnyMw5YBNkgFGw8fQ';
 
   @override
   Widget build(BuildContext context) {
@@ -23,13 +26,14 @@ class PaypalPayment extends StatelessWidget {
         ),
       ),
       body: WebView(
-        // initialUrl:
-        // 'https://us-central1-squat-c1feb.cloudfunctions.net/createpaypalpayment?amount=$amount&currency=$currency',
+        initialUrl:
+        'https://us-central1-squat-c1feb.cloudfunctions.net/createPaypalPayment?amount=$amount&currency=$currency',
         javascriptMode: JavascriptMode.unrestricted,
-        onWebViewCreated: (WebViewController webViewController) {
-          Map<String, String> headers = {"Authorization": "Bearer " + jwt};
-          webViewController.loadUrl( 'https://us-central1-squat-c1feb.cloudfunctions.net/createpaypalpayment?amount=$amount&currency=$currency', headers: headers);
-        },
+        // onWebViewCreated: (WebViewController webViewController) {
+        //         //   Map<String, String> headers = {"Authorization": "Bearer " + idToken};
+        //         //   webViewController.loadUrl( 'https://us-central1-squat-c1feb.cloudfunctions.net/createPaypalPayment?amount=$amount&currency=$currency',
+        //         //       headers: headers);
+        //         // },
         gestureRecognizers: Set()
           ..add(Factory<DragGestureRecognizer>(
                   () => VerticalDragGestureRecognizer())),

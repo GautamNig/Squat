@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:squat/widgets/header.dart';
 
 class CreateAccount extends StatefulWidget {
@@ -13,12 +14,17 @@ class _CreateAccountState extends State<CreateAccount> {
   String? username;
 
   submit() {
+    EasyLoading.show();
     final form = _formKey.currentState;
 
     if (form != null && form.validate()) {
       form.save();
-      SnackBar snackbar = SnackBar(content: Text("Welcome $username"));
-      _scaffoldKey.currentState?.showSnackBar(snackbar);
+      const snackBar = SnackBar(content: Text('Welcome, ready for squat against the bully bear?'));
+
+      // Find the ScaffoldMessenger in the widget tree
+      // and use it to show a SnackBar.
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      EasyLoading.dismiss();
       Timer(const Duration(seconds: 2), () {
         Navigator.pop(context, username);
       });
@@ -36,7 +42,7 @@ class _CreateAccountState extends State<CreateAccount> {
           Container(
             child: Column(
               children: <Widget>[
-                Padding(
+                const Padding(
                   padding: EdgeInsets.only(top: 25.0),
                   child: Center(
                     child: Text(
@@ -46,7 +52,7 @@ class _CreateAccountState extends State<CreateAccount> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Container(
                     child: Form(
                       key: _formKey,
