@@ -24,8 +24,8 @@ class _CreateAccountState extends State<CreateAccount> {
       // Find the ScaffoldMessenger in the widget tree
       // and use it to show a SnackBar.
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      EasyLoading.dismiss();
       Timer(const Duration(seconds: 2), () {
+        EasyLoading.dismiss();
         Navigator.pop(context, username);
       });
     }

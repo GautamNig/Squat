@@ -10,10 +10,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rive/rive.dart';
 import 'package:squat/pages/comments.dart';
 import 'package:squat/pages/donation.dart';
-import 'package:squat/pages/payment.dart';
 import 'package:squat/pages/squat_stat.dart';
 import 'package:squat/pages/squats.dart';
-import '../helpers/Constants.dart';
 import '../models/user.dart';
 import 'create_account.dart';
 import 'package:badges/badges.dart';
@@ -22,7 +20,7 @@ final GoogleSignIn googleSignIn = GoogleSignIn();
 final usersRef = FirebaseFirestore.instance.collection('users');
 final commentsRef = FirebaseFirestore.instance.collection('comments');
 final squatsRef = FirebaseFirestore.instance.collection('squats');
-final settingsRef = FirebaseFirestore.instance.collection('settings');
+// final settingsRef = FirebaseFirestore.instance.collection('settings');
 final DateTime timestamp = DateTime.now();
 
 late User currentUser;
@@ -44,6 +42,7 @@ class _HomeState extends State<Home> {
   Artboard? _startArtBoard;
   late RiveAnimationController squatAnimationController;
   int squatCount = 0;
+  bool hasSquated = false;
 
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   final List<_PositionItem> _positionItems = <_PositionItem>[];
@@ -265,6 +264,7 @@ class _HomeState extends State<Home> {
   }
 
   Scaffold buildAuthScreen() {
+    hasSquated = currentUser.hasSquated;
     return Scaffold(
       body: SafeArea(
         child: PageView(
@@ -284,19 +284,7 @@ class _HomeState extends State<Home> {
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
                         ),
-                        onPressed: currentUser.hasSquated ? null : () async {
-                          EasyLoading.show();
-                          _trigger?.value = true;
-                          addSquat();
-                          await usersRef
-                              .doc(currentUser.id)
-                              .update({"hasSquated": true});
-                          var doc = await usersRef.doc(googleSignIn.currentUser?.id).get();
-                          setState(() {
-                            currentUser = User.fromDocument(doc);
-                          });
-                          EasyLoading.dismiss();
-                        },
+                        onPressed: null,
                         child: const Text(
                           'Squat for Ukraine',
                           style: TextStyle(
