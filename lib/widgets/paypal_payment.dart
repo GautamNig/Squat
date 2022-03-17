@@ -1,14 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-
+import 'package:lottie/lottie.dart';
 import '../helpers/Constants.dart';
+import '../models/user.dart';
+import '../pages/Home.dart';
 
 class PaypalPayment extends StatelessWidget {
   final double amount;
   final String currency;
+
   const PaypalPayment({Key? key, required this.amount, required this.currency})
       : super(key: key);
 
@@ -27,7 +32,7 @@ class PaypalPayment extends StatelessWidget {
       ),
       body: WebView(
         initialUrl:
-        'https://us-central1-squat-c1feb.cloudfunctions.net/createPaypalPayment?amount=$amount&currency=$currency',
+            'https://us-central1-squat-c1feb.cloudfunctions.net/createPaypalPayment?amount=$amount&currency=$currency',
         javascriptMode: JavascriptMode.unrestricted,
         // onWebViewCreated: (WebViewController webViewController) {
         //         //   Map<String, String> headers = {"Authorization": "Bearer " + idToken};
@@ -36,18 +41,41 @@ class PaypalPayment extends StatelessWidget {
         //         // },
         gestureRecognizers: Set()
           ..add(Factory<DragGestureRecognizer>(
-                  () => VerticalDragGestureRecognizer())),
+              () => VerticalDragGestureRecognizer())),
         onPageFinished: (value) {
           print('onPageFinished..');
           print(value);
         },
         navigationDelegate: (NavigationRequest request) async {
           if (request.url.contains('http://return_url/?status=success')) {
+            Navigator.pop(context, 'success');
             print('return url on success');
-            Navigator.pop(context);
+            var donationTotal = currentUser.amountDonated + amount;
+
+            commentsRef
+                .where("userId", isEqualTo: currentUser.id)
+                .get()
+                .then((value){
+                      WriteBatch batch = FirebaseFirestore.instance.batch();
+                      for (var documentSnapshot in value.docs)
+                        {
+                          batch.update(commentsRef.doc(documentSnapshot.id),
+                              {"isCommentMadeByDonationUser": true});
+                        }
+
+                        batch.commit();
+                    });
+
+            // Commit the batch
+            usersRef
+                .doc(currentUser?.id)
+                .update({"amountDonated": donationTotal});
+
+            var doc = await usersRef.doc(currentUser?.id).get();
+            currentUser = User.fromDocument(doc);
           }
           if (request.url.contains('http://cancel_url')) {
-            Navigator.pop(context);
+            Navigator.pop(context, 'cancel');
           }
           return NavigationDecision.navigate;
         },

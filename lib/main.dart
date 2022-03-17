@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'helpers/Constants.dart';
 import 'pages/Home.dart';
 
 void main() async {
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
       theme: theme.copyWith(
         colorScheme: theme.colorScheme
             .copyWith(primary: Colors.deepPurple,
-          secondary: Colors.teal,),
+          secondary: Constants.appColor,),
       ),
       home: const Home(),
       builder: EasyLoading.init(),

@@ -1,6 +1,9 @@
 const functions = require("firebase-functions");
+const admin = require("firebase-admin");
 const paypal = require("paypal-rest-sdk");
 const {SecretManagerServiceClient} = require('@google-cloud/secret-manager');
+
+admin.initializeApp();
 
 let getSecret = async function (secretName) {
     try {
@@ -126,3 +129,44 @@ exports.execute = functions.https.onRequest( async (req, res) => {
         }
     });
  });
+
+//exports.onCreateSquat = functions.firestore
+//    .document('squats/{squatId}')
+//    .onCreate(async (snapshot, context) => {
+//           functions.logger.log("Snapshot Data UserId", snapshot.data().userId);
+//           const userId = snapshot.data().userId;
+//           const userRef = admin.firestore().doc(userId);
+//           const doc = await userRef.get()
+//
+//           // 2) Once we have user, check if they have a notification token; send notification, if they have a token
+//           const androidNotificationToken = doc.data().androidNotificationToken;
+//           const createdSquatItem = snapshot.data();
+//           if (androidNotificationToken) {
+//             sendNotification(androidNotificationToken, createdSquatItem);
+//           } else {
+//             console.log("No token for user, cannot send notification");
+//           }
+//
+//           function sendNotification(androidNotificationToken, squat) {
+//             let body = `${userRef.displayName} performed a squat at ${squat.locality}, ${squat.country}`;
+//
+//             // 4) Create message for push notification
+//             const message = {
+//               notification: { body },
+//               token: androidNotificationToken,
+//               data: { recipient: userId }
+//             };
+//
+//             // 5) Send message with admin.messaging()
+//             admin
+//               .messaging()
+//               .send(message)
+//               .then(response => {
+//                 // Response is a message ID string
+//                 functions.logger.log("Successfully sent message", response);
+//               })
+//               .catch(error => {
+//                 functions.logger.log("Error sending message", error);
+//               });
+//           }
+//    });

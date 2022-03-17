@@ -14,18 +14,16 @@ class _CreateAccountState extends State<CreateAccount> {
   String? username;
 
   submit() {
-    EasyLoading.show();
     final form = _formKey.currentState;
-
     if (form != null && form.validate()) {
       form.save();
-      const snackBar = SnackBar(content: Text('Welcome, ready for squat against the bully bear?'));
+      const snackBar = SnackBar(
+          content: Text('Welcome, ready for squat against the bully bear?'));
 
       // Find the ScaffoldMessenger in the widget tree
       // and use it to show a SnackBar.
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       Timer(const Duration(seconds: 2), () {
-        EasyLoading.dismiss();
         Navigator.pop(context, username);
       });
     }
@@ -59,7 +57,8 @@ class _CreateAccountState extends State<CreateAccount> {
                       autovalidateMode: AutovalidateMode.always,
                       child: TextFormField(
                         validator: (val) {
-                          if (val != null && (val.trim().length < 3 || val.isEmpty)) {
+                          if (val != null &&
+                              (val.trim().length < 3 || val.isEmpty)) {
                             return "Username too short";
                           } else if (val != null && val.trim().length > 12) {
                             return "Username too long";
@@ -68,7 +67,7 @@ class _CreateAccountState extends State<CreateAccount> {
                           }
                         },
                         onSaved: (val) => username = val,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: "Username",
                           labelStyle: TextStyle(fontSize: 15.0),
@@ -87,7 +86,7 @@ class _CreateAccountState extends State<CreateAccount> {
                       color: Colors.blue,
                       borderRadius: BorderRadius.circular(7.0),
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         "Submit",
                         style: TextStyle(

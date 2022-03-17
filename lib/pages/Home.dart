@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,17 +13,18 @@ import 'package:rive/rive.dart';
 import 'package:squat/pages/comments.dart';
 import 'package:squat/pages/donation.dart';
 import 'package:squat/pages/squat_stat.dart';
-import 'package:squat/pages/squats.dart';
+import 'package:squat/pages/squaters.dart';
+import '../helpers/Constants.dart';
 import '../models/user.dart';
 import 'create_account.dart';
 import 'package:badges/badges.dart';
+import 'package:odometer/odometer.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final usersRef = FirebaseFirestore.instance.collection('users');
 final commentsRef = FirebaseFirestore.instance.collection('comments');
-final squatsRef = FirebaseFirestore.instance.collection('squats');
+// final squatsRef = FirebaseFirestore.instance.collection('squats');
 // final settingsRef = FirebaseFirestore.instance.collection('settings');
-final DateTime timestamp = DateTime.now();
 
 late User currentUser;
 
@@ -32,7 +35,7 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   bool isAuth = false;
   String squatLocality = '';
   String squatCountry = '';
@@ -41,8 +44,11 @@ class _HomeState extends State<Home> {
   SMIInput<bool>? _trigger;
   Artboard? _startArtBoard;
   late RiveAnimationController squatAnimationController;
-  int squatCount = 0;
-  bool hasSquated = false;
+  int squatersCount = 0;
+  bool isClicked = false;
+
+  AnimationController? animationController;
+  late Animation<OdometerNumber> animation;
 
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   final List<_PositionItem> _positionItems = <_PositionItem>[];
@@ -55,18 +61,35 @@ class _HomeState extends State<Home> {
       'Permission denied forever.';
   static const String _kPermissionGrantedMessage = 'Permission granted.';
 
+  static const _timerDuration = 5;
+  StreamController _timerStream = StreamController<int>();
+  int timerCounter = 0;
+  late Timer _resendCodeTimer;
+
   // Usually we dispose the stuff created in init.
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
     pageController?.dispose();
+    animationController?.dispose();
+    _timerStream.close();
+    _resendCodeTimer.cancel();
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    activeCounter();
+    animationController =
+        AnimationController(duration: const Duration(seconds: 2), vsync: this);
+    animation =
+        OdometerTween(begin: OdometerNumber(10000), end: OdometerNumber(12000))
+            .animate(
+      CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
+    );
+
     pageController = PageController();
     // Detects when user signed in
     googleSignIn.onCurrentUserChanged.listen((account) {
@@ -84,10 +107,24 @@ class _HomeState extends State<Home> {
     });
 
     usersRef.snapshots().listen((querySnapshot) {
-      squatCount = querySnapshot.docs.where((doc) => User.fromDocument(doc).hasSquated == true).length;
+      squatersCount = querySnapshot.docs
+          .where((doc) => User.fromDocument(doc).hasSquated == true)
+          .length;
     });
 
     getLocationAndSetupRive();
+  }
+
+  activeCounter() {
+    _resendCodeTimer =
+        Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      if (_timerDuration - timer.tick > 0)
+        _timerStream.sink.add(_timerDuration - timer.tick);
+      else {
+        _timerStream.sink.add(0);
+        _resendCodeTimer.cancel();
+      }
+    });
   }
 
   @override
@@ -134,11 +171,6 @@ class _HomeState extends State<Home> {
 
   handleSignIn(GoogleSignInAccount? account) async {
     if (account != null) {
-      account.authentication.then((result){
-        }).catchError((err){
-          print('inner error');
-        });
-
       await createUserInFirestore();
       setState(() {
         isAuth = true;
@@ -199,12 +231,11 @@ class _HomeState extends State<Home> {
 
   login() async {
     EasyLoading.show();
-    await googleSignIn.signIn().then((result){
-      result?.authentication.then((googleKey){
-      }).catchError((err){
+    await googleSignIn.signIn().then((result) {
+      result?.authentication.then((googleKey) {}).catchError((err) {
         print('inner error');
       });
-    }).catchError((err){
+    }).catchError((err) {
       print('error occured');
     });
     EasyLoading.dismiss();
@@ -232,24 +263,17 @@ class _HomeState extends State<Home> {
         "email": user?.email,
         "displayName": user?.displayName,
         "bio": "",
-        "timestamp": timestamp,
         "hasSquated": false,
+        "amountDonated": 0,
+        "squatCount": 0,
+        "locality": squatLocality,
+        "country": squatCountry,
+        "lastSquatTime": DateTime.now(),
       });
       doc = await usersRef.doc(user?.id).get();
     }
     currentUser = User.fromDocument(doc);
     cacheImage(context, currentUser.photoUrl ?? '');
-  }
-
-  addSquat() {
-    squatsRef.add({
-      "username": currentUser.username,
-      "timestamp": timestamp,
-      "avatarUrl": currentUser.photoUrl,
-      "userId": currentUser.id,
-      "locality": squatLocality.isEmpty ? 'Unknown' : squatLocality,
-      "country": squatCountry.isEmpty ? 'Unknown' : squatCountry,
-    });
   }
 
   void _updatePositionList(_PositionItemType type, String displayValue) {
@@ -264,84 +288,139 @@ class _HomeState extends State<Home> {
   }
 
   Scaffold buildAuthScreen() {
-    hasSquated = currentUser.hasSquated;
     return Scaffold(
       body: SafeArea(
-        child: PageView(
-          children: <Widget>[
-            // Timeline(),
-            _startArtBoard == null
-                ? const SizedBox()
-                : Stack(alignment: Alignment.center, children: 
-                  [
-                    Rive(
-                      artboard: _startArtBoard!,
-                      fit: BoxFit.fill,
-                    ),
-                    Positioned(
-                      top: 5,
-                      child: ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
-                        ),
-                        onPressed: null,
-                        child: const Text(
-                          'Squat for Ukraine',
-                          style: TextStyle(
-                              fontFamily: "Signatra",
-                              fontSize: 30,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 5,
-                      right: 2,
-                      child: IconButton(
-                        onPressed: () {
-                          googleSignIn.signOut();
-                        },
-                        icon: const Icon(Icons.logout_sharp, color: Colors.teal,),
-                      ),
-                    ),
-                    const Positioned(
-                      bottom: 2,
-                      child: Text('Lumberjack Squats by Dante @rive.app', style: TextStyle(color: Colors.black,
-                      fontSize: 8),)
-                    ),
-                  ]),
-            Comments(userId: currentUser.id),
-            Squats(),
-            SquatStat(),
-            Donation()
-            // ActivityFeed(),
-            // Upload(currentUser:currentUser),
-            // Search(),
-            // Profile(profileId: currentUser.id ?? '')
-          ],
-          controller: pageController,
-          onPageChanged: onPageChanged,
-          physics: const NeverScrollableScrollPhysics(),
-        ),
-      ),
+          child: StreamBuilder(
+              stream: _timerStream.stream,
+              builder: (BuildContext ctx, AsyncSnapshot snapshot) {
+                return PageView(
+                  children: <Widget>[
+                    // Timeline(),
+                    _startArtBoard == null
+                        ? const SizedBox()
+                        : Stack(alignment: Alignment.center, children: [
+                            Rive(
+                              artboard: _startArtBoard!,
+                              fit: BoxFit.fill,
+                            ),
+                            Positioned(
+                              top: 5,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    primary: Constants.appColor),
+                                onPressed: snapshot.data == 0
+                                    ? () async {
+                                        _timerStream.sink.add(5);
+                                        activeCounter();
+                                        _trigger?.value = true;
+                                        currentUser.squatCount++;
+                                        await usersRef
+                                            .doc(currentUser?.id)
+                                            .update({
+                                          "hasSquated": true,
+                                          "squatCount": currentUser.squatCount,
+                                          "lastSquatTime": DateTime.now()
+                                        });
+                                        var doc = await usersRef
+                                            .doc(googleSignIn.currentUser?.id)
+                                            .get();
+                                        setState(() {
+                                          currentUser = User.fromDocument(doc);
+                                        });
+                                      }
+                                    : null,
+                                child: Center(
+                                    child: snapshot.data == 0
+                                        ? const Text('Squat for Ukraine', style: Constants.appHeaderTextSTyle,)
+                                        : Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: <Widget>[
+                                              Text(
+                                                  'Resting for ${snapshot.hasData ? snapshot.data.toString() : 5} sec'),
+                                            ],
+                                          )),
+                              ),
+                            ),
+                            Positioned(
+                              top: 5,
+                              right: 2,
+                              child: IconButton(
+                                onPressed: () {
+                                  googleSignIn.signOut();
+                                },
+                                icon: const Icon(
+                                  Icons.logout_sharp,
+                                  color: Constants.appColor,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: MediaQuery.of(context).size.height * 0.68,
+                              left: 5,
+                              child: Card(
+                                shape: BeveledRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                color: Constants.appColor,
+                                child: Container(
+                                  height: 60,
+                                  width: 60,
+                                  child: Center(
+                                    child: AnimatedSlideOdometerNumber(
+                                      letterWidth: 12,
+                                      odometerNumber: OdometerNumber(
+                                          currentUser.squatCount),
+                                      duration: const Duration(seconds: 1),
+                                      numberTextStyle: const TextStyle(
+                                          fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Constants.createAttributionAlignWidget('Lumberjack Squats by Dante @rive.app')
+                          ]),
+                    Comments(userId: currentUser.id),
+                    Squaters(),
+                    SquatStat(),
+                    Donation()
+                    // ActivityFeed(),
+                    // Upload(currentUser:currentUser),
+                    // Search(),
+                    // Profile(profileId: currentUser.id ?? '')
+                  ],
+                  controller: pageController,
+                  onPageChanged: onPageChanged,
+                  physics: const NeverScrollableScrollPhysics(),
+                );
+              })),
       bottomNavigationBar: CupertinoTabBar(
         currentIndex: pageIndex,
         onTap: onTap,
         activeColor: Theme.of(context).primaryColor,
         items: [
-          BottomNavigationBarItem(icon: Badge(child: const Icon(Icons.whatshot),
-              shape: BadgeShape.square,
-              position: BadgePosition.bottomEnd(bottom: -15),
-              badgeContent:
-          Text(squatCount.toString(), style: const TextStyle(color: Colors.white),))),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.whatshot),
+          ),
           const BottomNavigationBarItem(
               icon: Icon(
             Icons.comment_bank_outlined,
-            size: 35,
           )),
-          const BottomNavigationBarItem(icon: Icon(Icons.notifications_active)),
+          BottomNavigationBarItem(
+            icon: Badge(
+              child: const Icon(Icons.list_alt),
+              shape: BadgeShape.square,
+              position: BadgePosition.bottomEnd(bottom: -15),
+              badgeContent: Text(
+                squatersCount.toString(),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
           const BottomNavigationBarItem(icon: Icon(Icons.stacked_bar_chart)),
-          const BottomNavigationBarItem(icon: Icon(Icons.monetization_on_sharp)),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.monetization_on_sharp)),
           // BottomNavigationBarItem(icon: Icon(Icons.search)),
           // BottomNavigationBarItem(icon: Icon(Icons.account_circle)),
         ],
@@ -359,8 +438,7 @@ class _HomeState extends State<Home> {
             Image.asset('assets/images/soilder.jpg'),
             const Text(
               'Squat for Ukraine',
-              style: TextStyle(
-                  fontFamily: "Signatra", fontSize: 50, color: Colors.black),
+              style: Constants.appHeaderTextSTyle,
             ),
             GestureDetector(
               onTap: login,

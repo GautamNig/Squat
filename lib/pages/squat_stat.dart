@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:squat/pages/squats.dart';
+import 'package:squat/pages/squaters.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+import '../helpers/Constants.dart';
+import '../models/user.dart';
 import '../widgets/progress.dart';
 import 'Home.dart';
 
@@ -17,8 +19,8 @@ class SquatStat extends StatefulWidget {
 class _SquatStatState extends State<SquatStat> {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: squatsRef.snapshots(),
+    return StreamBuilder(
+        stream: usersRef.snapshots(),
         builder: (context,
             AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
           if (!snapshot.hasData) return circularProgress();
@@ -34,27 +36,28 @@ class _SquatStatState extends State<SquatStat> {
 
           var newMap = groupBy(
               snapshot.data!.docs,
-              (DocumentSnapshot<Object?> obj) =>
-                  Squat.fromDocument(obj).country);
+              (DocumentSnapshot obj) => User.fromDocument(obj).country);
 
           newMap.forEach((key, value) {
-            squatDataList.add(SquatData(key, value.length));
+            squatDataList.add(SquatData(key.toString(), value.length));
           });
 
-          squatDataList.sort((a, b) => b.squats.compareTo(a.squats));
+          squatDataList.sort((a, b) => b.squaters.compareTo(a.squaters));
 
           if (squatDataList.length > 5) {
             squatDataList = squatDataList.take(5).toList();
           }
 
+          squatDataList.forEach((element) {print(element);});
+
           return SfCircularChart(
               title: ChartTitle(
-                  text: 'Squats by Country',
-                  textStyle: const TextStyle(
-                    fontFamily: "Signatra",
-                    fontSize: 30,
-                    color: Colors.teal
-                  ),),
+                  text: 'Squatters by Country',
+                  textStyle: TextStyle(
+                      fontFamily: "Signatra",
+                      fontSize: 30,
+                      color: Colors.teal
+                  )),
               legend: Legend(isVisible: true),
               // Initialize category axis
               series: <CircularSeries>[
@@ -68,14 +71,11 @@ class _SquatStatState extends State<SquatStat> {
                     //     SquatData('May', 40)
                     //   ],
                     dataSource: squatDataList,
-                    xValueMapper: (SquatData sales, _) => sales.country,
-                    yValueMapper: (SquatData sales, _) => sales.squats,
+                    xValueMapper: (SquatData sales, _) => sales.country.toString(),
+                    yValueMapper: (SquatData sales, _) => sales.squaters,
                     dataLabelSettings: const DataLabelSettings(
                       isVisible: true,
-                      textStyle: TextStyle(
-                        fontFamily: "Signatra",
-                        fontSize: 18,
-                      ),
+                      textStyle: Constants.appHeaderTextSTyle,
                     ))
               ]);
         });
@@ -83,8 +83,8 @@ class _SquatStatState extends State<SquatStat> {
 }
 
 class SquatData {
-  SquatData(this.country, this.squats);
+  SquatData(this.country, this.squaters);
 
   final String country;
-  final int squats;
+  final int squaters;
 }

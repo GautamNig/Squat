@@ -1,13 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class User {
-  final String id;
-  final String username;
-  final String email;
-  final String photoUrl;
-  final String displayName;
-  final String bio;
-  final bool hasSquated;
+  String id;
+  String username;
+  String email;
+  String photoUrl;
+  String displayName;
+  String bio;
+  bool hasSquated;
+  num amountDonated;
+  int squatCount;
+  final String locality;
+  final String country;
+  final Timestamp lastSquatTime;
 
   User({
     required this.id,
@@ -17,6 +22,11 @@ class User {
     required this.displayName,
     required this.bio,
     required this.hasSquated,
+    required this.amountDonated,
+    required this.squatCount,
+    required this.locality,
+    required this.country,
+    required this.lastSquatTime,
   });
 
   factory User.fromDocument(DocumentSnapshot doc) {
@@ -28,6 +38,11 @@ class User {
       displayName: doc['displayName'],
       bio: doc['bio'],
       hasSquated: doc['hasSquated'],
+      amountDonated: doc['amountDonated'],
+      squatCount: doc['squatCount'],
+      locality: doc['locality'],
+      country: doc['country'],
+      lastSquatTime: doc['lastSquatTime'],
     );
   }
 }
