@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import "package:intl/intl.dart";
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,12 +13,13 @@ import 'package:rive/rive.dart';
 import 'package:squat/pages/comments.dart';
 import 'package:squat/pages/donation.dart';
 import 'package:squat/pages/squat_stat.dart';
-import 'package:squat/pages/squaters.dart';
+import 'package:squat/pages/squatters.dart';
 import '../helpers/Constants.dart';
 import '../models/user.dart';
 import 'create_account.dart';
 import 'package:badges/badges.dart';
 import 'package:odometer/odometer.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final usersRef = FirebaseFirestore.instance.collection('users');
@@ -45,6 +46,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Artboard? _startArtBoard;
   late RiveAnimationController squatAnimationController;
   int squatersCount = 0;
+  num totalGlobalSquatCount = 0;
   bool isClicked = false;
 
   AnimationController? animationController;
@@ -65,6 +67,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   StreamController _timerStream = StreamController<int>();
   int timerCounter = 0;
   late Timer _resendCodeTimer;
+  AudioCache audioCache = AudioCache();
 
   // Usually we dispose the stuff created in init.
   @override
@@ -95,7 +98,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     googleSignIn.onCurrentUserChanged.listen((account) {
       handleSignIn(account);
     }, onError: (err) {
-      print('Error signing in : $err');
     });
 
     // Re-authenticate user when app is opened
@@ -103,13 +105,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         .signInSilently(suppressErrors: false)
         .then((account) => handleSignIn(account))
         .catchError((err) {
-      print('Error signing in : $err');
     });
 
     usersRef.snapshots().listen((querySnapshot) {
-      squatersCount = querySnapshot.docs
-          .where((doc) => User.fromDocument(doc).hasSquated == true)
-          .length;
+       var squattersList =  querySnapshot.docs
+          .map((doc) => User.fromDocument(doc).squatCount);
+
+       squatersCount = squattersList.where((element) => element > 0).length;
+
+       num sum = 0;
+       for (num e in squattersList) {
+         sum += e;
+       }
+        totalGlobalSquatCount = sum;
     });
 
     getLocationAndSetupRive();
@@ -118,9 +126,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   activeCounter() {
     _resendCodeTimer =
         Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      if (_timerDuration - timer.tick > 0)
+      if (_timerDuration - timer.tick > 0) {
         _timerStream.sink.add(_timerDuration - timer.tick);
-      else {
+      } else {
         _timerStream.sink.add(0);
         _resendCodeTimer.cancel();
       }
@@ -232,9 +240,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   login() async {
     EasyLoading.show();
     await googleSignIn.signIn().then((result) {
-      result?.authentication.then((googleKey) {}).catchError((err) {
-        print('inner error');
-      });
     }).catchError((err) {
       print('error occured');
     });
@@ -307,13 +312,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                               top: 5,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                    primary: Constants.appColor),
+                                    primary: Constants.appColor,shadowColor: Colors.white,
+                                  elevation: 25,),
                                 onPressed: snapshot.data == 0
                                     ? () async {
-                                        _timerStream.sink.add(5);
-                                        activeCounter();
                                         _trigger?.value = true;
                                         currentUser.squatCount++;
+                                        Future.delayed(const Duration(milliseconds: 1400), ()
+                                        {
+                                          audioCache.play('grunt.mp3');
+                                        });
                                         await usersRef
                                             .doc(currentUser?.id)
                                             .update({
@@ -324,6 +332,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                         var doc = await usersRef
                                             .doc(googleSignIn.currentUser?.id)
                                             .get();
+                                        _timerStream.sink.add(5);
+                                        activeCounter();
                                         setState(() {
                                           currentUser = User.fromDocument(doc);
                                         });
@@ -356,29 +366,75 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                               ),
                             ),
                             Positioned(
-                              top: MediaQuery.of(context).size.height * 0.68,
+                              top: MediaQuery.of(context).size.height * 0.60,
                               left: 5,
-                              child: Card(
-                                shape: BeveledRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                color: Constants.appColor,
-                                child: Container(
-                                  height: 60,
-                                  width: 60,
-                                  child: Center(
-                                    child: AnimatedSlideOdometerNumber(
-                                      letterWidth: 12,
-                                      odometerNumber: OdometerNumber(
-                                          currentUser.squatCount),
-                                      duration: const Duration(seconds: 1),
-                                      numberTextStyle: const TextStyle(
-                                          fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                              child: Column(
+                                children: [
+                                  Card(
+                                    shape: BeveledRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
                                     ),
+                                    color: Constants.appColor,
+                                    child: Container(
+                                      height: 60,
+                                      width: 60,
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            AnimatedSlideOdometerNumber(
+                                              letterWidth: 18,
+                                              odometerNumber: OdometerNumber(
+                                                  currentUser.squatCount),
+                                              duration: const Duration(seconds: 1),
+                                              numberTextStyle: const TextStyle(
+                                                  fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold),
+                                            ),
+                                            const Text('SQUATS', style: TextStyle(color: Colors.white, fontSize: 10),)
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                ],
+                              ),
+                            ),
+                      Positioned(
+                        top: MediaQuery.of(context).size.height * 0.60,
+                        right: 5,
+                        child: Column(
+                          children: [
+                            Card(
+                              shape: BeveledRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              color: Constants.appColor,
+                              child: Container(
+                                height: 60,
+                                width: 60,
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      AnimatedSlideOdometerNumber(
+                                        letterWidth: 18,
+                                        odometerNumber: OdometerNumber(
+                                            totalGlobalSquatCount.toInt()),
+                                        duration: const Duration(seconds: 1),
+                                        numberTextStyle: const TextStyle(
+                                            fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold),
+                                      ),
+                                      const Text('WORLD SQUATS', style: TextStyle(color: Colors.white, fontSize: 7),)
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
+
+                          ],
+                        ),
+                      ),
                             Constants.createAttributionAlignWidget('Lumberjack Squats by Dante @rive.app')
                           ]),
                     Comments(userId: currentUser.id),
@@ -413,7 +469,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               shape: BadgeShape.square,
               position: BadgePosition.bottomEnd(bottom: -15),
               badgeContent: Text(
-                squatersCount.toString(),
+                NumberFormat.compact().format(squatersCount),
                 style: const TextStyle(color: Colors.white),
               ),
             ),

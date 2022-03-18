@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:squat/pages/squaters.dart';
+import 'package:squat/pages/squatters.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../helpers/Constants.dart';
@@ -48,15 +48,13 @@ class _SquatStatState extends State<SquatStat> {
             squatDataList = squatDataList.take(5).toList();
           }
 
-          squatDataList.forEach((element) {print(element);});
-
           return SfCircularChart(
               title: ChartTitle(
                   text: 'Squatters by Country',
-                  textStyle: TextStyle(
+                  textStyle: const TextStyle(
                       fontFamily: "Signatra",
                       fontSize: 30,
-                      color: Colors.teal
+                      color: Constants.appColor
                   )),
               legend: Legend(isVisible: true),
               // Initialize category axis

@@ -10,6 +10,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:uuid/uuid.dart';
 import '../helpers/Constants.dart';
 import 'Home.dart';
+import 'package:giphy_picker/giphy_picker.dart';
 
 class Comments extends StatefulWidget {
   final String userId;
@@ -19,7 +20,8 @@ class Comments extends StatefulWidget {
   });
 
   @override
-  CommentsState createState() => CommentsState(
+  CommentsState createState() =>
+      CommentsState(
         userId: this.userId,
       );
 }
@@ -27,7 +29,8 @@ class Comments extends StatefulWidget {
 class CommentsState extends State<Comments> {
   TextEditingController commentTextEditingController = TextEditingController();
   final String userId;
-  bool showPenLottie = true;
+  GiphyGif? _gif;
+
   CommentsState({
     required this.userId,
   });
@@ -41,7 +44,6 @@ class CommentsState extends State<Comments> {
           }
           List<Comment> comments = [];
           snapshot.data.docs.forEach((doc) {
-            print(doc);
             comments.add(Comment.fromDocument(doc));
           });
           return ListView(
@@ -51,20 +53,25 @@ class CommentsState extends State<Comments> {
   }
 
   addComment() {
-    var commentId = Uuid().v4();
+    var commentId = const Uuid().v4();
     commentsRef.doc(commentId).set({
       "commentId": commentId,
       "username": currentUser?.username,
       "userId": currentUser?.id,
       "avatarUrl": currentUser?.photoUrl,
       "comment": commentTextEditingController.text,
+      "giphyUrl": _gif == null ? '' : _gif?.images.original?.url,
       "timestamp": DateTime.now(),
       "commentLikedByIds": [],
       "isCommentMadeByDonationUser":
-          currentUser.amountDonated > 0 ? true : false
+      currentUser.amountDonated > 0 ? true : false
+    }).then((value) {
+      commentTextEditingController.clear();
+      setState(() {
+        _gif = null;
+      });
+      FocusManager.instance.primaryFocus?.unfocus();
     });
-
-    commentTextEditingController.clear();
   }
 
   @override
@@ -84,37 +91,59 @@ class CommentsState extends State<Comments> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: header(context, titleText: "Comments"),
-      body: Stack(
-        children: [
-          Column(
-            children: <Widget>[
-              Expanded(child: buildComments()),
-              const Divider(),
-              ListTile(
-                title: TextFormField(
-                  onChanged: (val){
-                    commentTextEditingController.text.isEmpty ? showPenLottie = true : showPenLottie = false;
-                  },
-                  controller: commentTextEditingController,
-                ),
-                trailing: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      primary: Constants.appColor),
-                  onPressed: addComment,
-                  child: const Text("Post"),
-                ),
-              ),
-            ],
-          ),
-          Constants.createAttributionAlignWidget('Monika Madurska/Sachin @Lottie Files', alignmentGeometry:
-            Alignment.topCenter),
+      body: Column(
+        children: <Widget>[
+          Expanded(child: buildComments()),
+          const Divider(),
           Visibility(
-            visible: showPenLottie,
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: Lottie.asset('assets/pen.json', width: 50, height: 50)
+            visible: _gif == null ? false : true,
+            child: Stack(
+              children: [SizedBox(
+                height: 150,
+                child: _gif != null
+                    ? GiphyImage.original(gif: _gif!)
+                    : Container(),
+                ),
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.cancel_rounded, color: Colors.white,),
+                    onPressed: () {
+                      setState(() {
+                        _gif = null;
+                      });
+                      FocusManager.instance.primaryFocus?.unfocus();
+                    },
+                  ),
+                ),
+              ]
             ),
-          )
+          ),
+          ListTile(
+            title: TextFormField(
+              controller: commentTextEditingController,
+            ),
+            trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.gif_sharp, color: _gif == null ? Colors.grey : Constants.appColor,),
+                    onPressed: () async {
+                      var gif = await GiphyPicker.pickGif(
+                          context: context,
+                          apiKey: 'qoux45CaAFm0217NHzqsCjvD4PpYpsSu');
+                      if (gif != null) {
+                        setState(() => _gif = gif);
+                      }
+                    }
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.send_rounded, color: Constants.appColor,),
+                    onPressed: addComment
+                  ),
+                ]),
+          ),
         ],
       ),
     );
@@ -129,7 +158,6 @@ class Comment extends StatelessWidget {
   final String comment;
   final Timestamp timestamp;
   final List<String> commentLikedByIds;
-  final bool isCommentMadeByDonationUser;
   final String giphyUrl;
 
   Comment({
@@ -140,7 +168,6 @@ class Comment extends StatelessWidget {
     required this.comment,
     required this.timestamp,
     required this.commentLikedByIds,
-    required this.isCommentMadeByDonationUser,
     required this.giphyUrl,
   });
 
@@ -153,8 +180,7 @@ class Comment extends StatelessWidget {
       comment: doc['comment'],
       timestamp: doc['timestamp'],
       commentLikedByIds:
-          List<String>.from(doc["commentLikedByIds"].map((x) => x)),
-      isCommentMadeByDonationUser: doc['isCommentMadeByDonationUser'],
+      List<String>.from(doc["commentLikedByIds"].map((x) => x)),
       giphyUrl: doc['giphyUrl'],
     );
   }
@@ -164,7 +190,8 @@ class Comment extends StatelessWidget {
     print(userId);
     return Column(
       children: <Widget>[
-        ListTile(
+        giphyUrl.isEmpty
+            ? ListTile(
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -185,7 +212,7 @@ class Comment extends StatelessWidget {
                       commentLikedByIds.remove(currentUser.id);
                       await commentsRef.doc(commentId).update({
                         'commentLikedByIds':
-                            List<dynamic>.from(commentLikedByIds)
+                        List<dynamic>.from(commentLikedByIds)
                       });
                     } else {
                       // setState(() {
@@ -194,22 +221,15 @@ class Comment extends StatelessWidget {
                       commentLikedByIds.add(currentUser.id);
                       await commentsRef.doc(commentId).update({
                         'commentLikedByIds':
-                            List<dynamic>.from(commentLikedByIds)
+                        List<dynamic>.from(commentLikedByIds)
                       });
                     }
                   },
-                  child: Row(
-                    children: [
-                      isCommentMadeByDonationUser
-                          ? Lottie.asset('assets/dollar.json')
-                          : const Text(''),
-                      Icon(
-                        Icons.thumb_up_sharp,
-                        color: commentLikedByIds.contains(currentUser.id)
-                            ? Colors.pink
-                            : Colors.grey,
-                      ),
-                    ],
+                  child: Icon(
+                    Icons.thumb_up_sharp,
+                    color: commentLikedByIds.contains(currentUser.id)
+                        ? Colors.pink
+                        : Colors.grey,
                   ),
                 ),
               ),
@@ -219,7 +239,78 @@ class Comment extends StatelessWidget {
             backgroundImage: CachedNetworkImageProvider(avatarUrl),
           ),
           subtitle: Text(timeago.format(timestamp.toDate())),
-        ),
+        )
+            : Column(children: [
+          ListTile(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(comment),
+                Badge(
+                  showBadge: commentLikedByIds.isEmpty ? false : true,
+                  position: BadgePosition.bottomEnd(bottom: 15, end: -10),
+                  animationDuration: const Duration(milliseconds: 300),
+                  animationType: BadgeAnimationType.slide,
+                  badgeContent: Text(commentLikedByIds.length.toString(),
+                      style: const TextStyle(color: Colors.white)),
+                  child: InkWell(
+                    onTap: () async {
+                      if (commentLikedByIds.contains(currentUser.id)) {
+                        // setState(() {
+                        //   thumbsUpColor = Colors.white;
+                        // });
+                        commentLikedByIds.remove(currentUser.id);
+                        await commentsRef.doc(commentId).update({
+                          'commentLikedByIds':
+                          List<dynamic>.from(commentLikedByIds)
+                        });
+                      } else {
+                        // setState(() {
+                        //   thumbsUpColor = Colors.pink;
+                        // });
+                        commentLikedByIds.add(currentUser.id);
+                        await commentsRef.doc(commentId).update({
+                          'commentLikedByIds':
+                          List<dynamic>.from(commentLikedByIds)
+                        });
+                      }
+                    },
+                    child: Icon(
+                      Icons.thumb_up_sharp,
+                      color:
+                      commentLikedByIds.contains(currentUser.id)
+                          ? Colors.pink
+                          : Colors.grey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            leading: CircleAvatar(
+              backgroundImage: CachedNetworkImageProvider(avatarUrl),
+            ),
+            subtitle: Text(timeago.format(timestamp.toDate())),
+          ),
+          CachedNetworkImage(
+            imageUrl: giphyUrl,
+            imageBuilder: (context, imageProvider) =>
+                Container(
+                  width: MediaQuery
+                      .of(context)
+                      .size
+                      .width - 40,
+                  height: 200.0,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    image: DecorationImage(
+                        image: imageProvider, fit: BoxFit.cover),
+                  ),
+                ),
+            placeholder: (context, url) =>
+            const CircularProgressIndicator(),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
+          ),
+        ]),
         const Divider(),
       ],
     );

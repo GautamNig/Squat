@@ -2,11 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:cloud_functions/cloud_functions.dart';
-import 'package:lottie/lottie.dart';
-import '../helpers/Constants.dart';
 import '../models/user.dart';
 import '../pages/Home.dart';
 

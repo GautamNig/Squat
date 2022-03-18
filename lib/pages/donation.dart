@@ -114,6 +114,7 @@ class _DonationState extends State<Donation> {
 
                                     if (result == 'success') {
                                       amountTextEditingController.clear();
+                                      FocusManager.instance.primaryFocus?.unfocus();
                                       const snackBar = SnackBar(
                                           content: Text(
                                               'Payment completed, Thanks for your donation!'));
@@ -121,7 +122,7 @@ class _DonationState extends State<Donation> {
                                           .showSnackBar(snackBar);
                                     }
                                   },
-                        style: ElevatedButton.styleFrom(primary: Colors.teal),
+                        style: ElevatedButton.styleFrom(primary: Constants.appColor),
                         child: const Text(
                           'Donate Now',
                           style: Constants.appHeaderTextSTyle,
