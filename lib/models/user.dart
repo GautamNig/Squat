@@ -7,12 +7,13 @@ class User {
   String photoUrl;
   String displayName;
   String bio;
-  bool hasSquated;
   num amountDonated;
   int squatCount;
   final String locality;
   final String country;
+  final String isoCountryCode;
   final Timestamp lastSquatTime;
+  final Timestamp joiningDateTime;
 
   User({
     required this.id,
@@ -21,12 +22,13 @@ class User {
     required this.photoUrl,
     required this.displayName,
     required this.bio,
-    required this.hasSquated,
     required this.amountDonated,
     required this.squatCount,
     required this.locality,
     required this.country,
+    required this.isoCountryCode,
     required this.lastSquatTime,
+    required this.joiningDateTime,
   });
 
   factory User.fromDocument(DocumentSnapshot doc) {
@@ -37,12 +39,13 @@ class User {
       photoUrl: doc['photoUrl'],
       displayName: doc['displayName'],
       bio: doc['bio'],
-      hasSquated: doc['hasSquated'],
       amountDonated: doc['amountDonated'],
       squatCount: doc['squatCount'],
       locality: doc['locality'],
       country: doc['country'],
+      isoCountryCode: doc['isoCountryCode'],
       lastSquatTime: doc['lastSquatTime'],
+      joiningDateTime: doc['joiningDateTime'],
     );
   }
 }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:squat/widgets/header.dart';
 
+import '../helpers/Constants.dart';
+
 class CreateAccount extends StatefulWidget {
   @override
   _CreateAccountState createState() => _CreateAccountState();
@@ -18,6 +20,7 @@ class _CreateAccountState extends State<CreateAccount> {
     if (form != null && form.validate()) {
       form.save();
       const snackBar = SnackBar(
+          backgroundColor: Constants.appColor,
           content: Text('Welcome, ready for squat against the bully bear?'));
 
       // Find the ScaffoldMessenger in the widget tree

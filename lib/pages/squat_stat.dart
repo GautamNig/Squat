@@ -19,24 +19,11 @@ class SquatStat extends StatefulWidget {
 class _SquatStatState extends State<SquatStat> {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-        stream: usersRef.snapshots(),
-        builder: (context,
-            AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
-          if (!snapshot.hasData) return circularProgress();
-          // return GroupedListView<dynamic, String>(
-          //   elements: snapshot.data.docs,
-          //   groupBy: (element) => element!['country'],
-          //   groupSeparatorBuilder: (String groupByValue) => Text(groupByValue),
-          //   itemBuilder: (context, obj) => Text(obj.toString()),
-          //   order: GroupedListOrder.ASC,
-          // );
-
           List<SquatData> squatDataList = [];
 
           var newMap = groupBy(
-              snapshot.data!.docs,
-              (DocumentSnapshot obj) => User.fromDocument(obj).country);
+              squattersList!,
+              (User obj) => obj.country);
 
           newMap.forEach((key, value) {
             squatDataList.add(SquatData(key.toString(), value.length));
@@ -44,8 +31,8 @@ class _SquatStatState extends State<SquatStat> {
 
           squatDataList.sort((a, b) => b.squaters.compareTo(a.squaters));
 
-          if (squatDataList.length > 5) {
-            squatDataList = squatDataList.take(5).toList();
+          if (squatDataList.length > int.parse(Constants.appSettings.graphCountryCount![0])) {
+            squatDataList = squatDataList.take(int.parse(Constants.appSettings.graphCountryCount![0])).toList();
           }
 
           return SfCircularChart(
@@ -76,7 +63,6 @@ class _SquatStatState extends State<SquatStat> {
                       textStyle: Constants.appHeaderTextSTyle,
                     ))
               ]);
-        });
   }
 }
 

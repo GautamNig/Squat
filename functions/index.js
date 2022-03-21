@@ -16,10 +16,8 @@ let getSecret = async function (secretName) {
         }
 
         // Instantiates a client
-        console.info('Creating a SecretManagerServiceClient')
         const client = new SecretManagerServiceClient();
 
-        console.info('Calling a accessSecretVersion')
         const [version] = await client.accessSecretVersion({
             name: secretName,
         });
@@ -40,10 +38,10 @@ exports.createPaypalPayment = functions.https.onRequest( async (req, res) => {
     const amount = req.query.amount;
     const currency = req.query.currency.toUpperCase();
 
-    let result = await getSecret('projects/256669154700/secrets/PAYPAL_SECRET/versions/latest');
+    let result = await getSecret('projects/256669154700/secrets/PAYPAL_SECRET_LIVE/versions/latest');
 
     paypal.configure({
-        'mode': 'sandbox',
+        'mode': 'live',
         'client_id': functions.config().paypal.key,
         'client_secret': result.Payload
     });
@@ -100,10 +98,10 @@ exports.execute = functions.https.onRequest( async (req, res) => {
 	const amount = req.query.amount;
     const currency = req.query.currency.toUpperCase();
 
-    let result = await getSecret('projects/256669154700/secrets/PAYPAL_SECRET/versions/1');
+    let result = await getSecret('projects/256669154700/secrets/PAYPAL_SECRET_LIVE/versions/latest');
 
     paypal.configure({
-            'mode': 'sandbox',
+            'mode': 'live',
             'client_id': functions.config().paypal.key,
             'client_secret': result.Payload
         });

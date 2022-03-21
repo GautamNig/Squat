@@ -8,31 +8,36 @@ class Configuration {
         ? AppSettings.fromJson(json['AppSettings'])
         : null;
   }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    if (appSettings != null) {
-      data['AppSettings'] = appSettings!.toJson();
-    }
-    return data;
-  }
 }
 
 class AppSettings {
-  List<String>? customToken;
-  List<String>? androidKey;
+  List<String>? giphyTestKey;
+  List<String>? giphyProdKey;
+  List<String>? nyTimesApiKey;
+  List<String>? squatWaitTime;
+  List<String>? graphCountryCount;
+  List<String>? snackBarTimeDuration;
+  List<String>? nyTimesApiSearchTerms;
+  List<String>? generalMessages;
 
-  AppSettings({this.customToken, this.androidKey});
+  AppSettings({this.giphyTestKey,
+    this.giphyProdKey,
+    this.nyTimesApiKey,
+    this.squatWaitTime,
+    this.graphCountryCount,
+    this.snackBarTimeDuration,
+    this.nyTimesApiSearchTerms,
+    this.generalMessages
+  });
 
   AppSettings.fromJson(Map<String, dynamic> json) {
-    customToken = json['CustomToken'].cast<String>();
-    androidKey = json['AndroidKey'].cast<String>();
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['CustomToken'] = customToken;
-    data['AndroidKey'] = androidKey;
-    return data;
+    giphyTestKey = json['giphyTestKey'].cast<String>();
+    giphyProdKey = json['giphyProdKey'].cast<String>();
+    nyTimesApiKey = json['nyTimesApiKey'].cast<String>();
+    squatWaitTime = json['squatWaitTime'].cast<String>();
+    graphCountryCount = json['graphCountryCount'].cast<String>();
+    snackBarTimeDuration = json['snackBarTimeDuration'].cast<String>();
+    nyTimesApiSearchTerms = json['nyTimesApiSearchTerms'].cast<String>();
+    generalMessages = json['generalMessages'].cast<String>();
   }
 }

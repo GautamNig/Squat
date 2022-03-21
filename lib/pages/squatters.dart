@@ -1,10 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flag/flag.dart';
+import 'package:flag/flag_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:squat/widgets/header.dart';
-import 'package:squat/widgets/progress.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../helpers/Constants.dart';
 import '../models/user.dart';
@@ -16,31 +19,28 @@ class Squaters extends StatefulWidget {
 }
 
 class _SquatsState extends State<Squaters> {
+
+  bool isSortedRecently = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: header(context, titleText: "Squatters"),
-      body: StreamBuilder(
-          stream:
-              usersRef.orderBy("lastSquatTime", descending: true).snapshots(),
-          builder: (context, AsyncSnapshot snapshot) {
-            if (!snapshot.hasData) {
-              return circularProgress();
-            }
-            List<UserWidget> users = [];
-            snapshot.data.docs.forEach((doc) {
-              users.add(UserWidget.fromDocument(doc));
-            });
-            return Stack(
+      body: Stack(
               children: [
                 ListView(
-                  children: users,
+                  children: squattersList!.map((e) => UserWidget.fromDocument(e))!.toList(),
                 ),
                 Constants.createAttributionAlignWidget(
-                    'Santosh Thapa/Sachin @Lottie Files'),
+                    'Sachin @Lottie Files'),
               ],
-            );
-          }),
+            )
     );
   }
 }
@@ -49,9 +49,10 @@ class UserWidget extends StatelessWidget {
   final String username;
   final String userId;
   final String avatarUrl;
-  final Timestamp timestamp;
+  final Timestamp joiningDateTime;
   final String locality;
   final String country;
+  final String isoCountryCode;
   final num amountDonated;
   final num squatCount;
 
@@ -59,110 +60,92 @@ class UserWidget extends StatelessWidget {
     required this.username,
     required this.userId,
     required this.avatarUrl,
-    required this.timestamp,
+    required this.joiningDateTime,
     required this.locality,
     required this.country,
+    required this.isoCountryCode,
     required this.amountDonated,
     required this.squatCount,
   });
 
-  factory UserWidget.fromDocument(DocumentSnapshot doc) {
+  factory UserWidget.fromDocument(User user) {
     return UserWidget(
-      username: doc['username'],
-      userId: doc['id'],
-      timestamp: doc['lastSquatTime'],
-      avatarUrl: doc['photoUrl'],
-      locality: doc['locality'],
-      country: doc['country'],
-      amountDonated: doc['amountDonated'],
-      squatCount: doc['squatCount'],
+      username: user.username,
+      userId: user.id,
+      joiningDateTime: user.joiningDateTime,
+      avatarUrl: user.photoUrl,
+      locality: user.locality,
+      country: user.country,
+      isoCountryCode: user.isoCountryCode,
+      amountDonated: user.amountDonated,
+      squatCount: user.squatCount,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        ListTile(
-          title: Text('$username\n$locality $country\n'),
-          onLongPress: () {
-            Alert(
-                context: context,
-                title: 'Squatter Profile',
-                content: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 120,
-                      child: Container(
-                        alignment: const Alignment(0.0, 2.5),
-                        child: CircleAvatar(
-                          backgroundImage: NetworkImage(avatarUrl),
-                          radius: 60.0,
+    return  Card(
+      color: Constants.appColor,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Wrap(
+        children: [
+          Container(
+            height: 98,
+            width: MediaQuery.of(context).size.width,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                bottomRight: Radius.circular(4),
+                topRight: Radius.circular(4),
+              ),
+            ),
+            margin: const EdgeInsets.only(left: 3),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment:
+                      MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Row(
+                          children: [
+                            Text(username, style: const TextStyle(fontStyle: FontStyle.italic, color: Constants.appColor)),
+                            amountDonated > 0
+                                ? Container(height: 60, width: 60, child: Lottie.asset('assets/dollar.json'))
+                                : Container(),
+                          ],
                         ),
-                      ),
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('$locality, $country'),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: Flag.fromString(isoCountryCode, height: 50, width: 50, replacement: Text('$isoCountryCode not found'),),
+                              )
+                            ],
+                          ),
+                        ),
+                        Text('Joined ${timeago.format(joiningDateTime.toDate())}',
+                            style: const TextStyle(fontStyle: FontStyle.italic,
+                                color: Colors.grey)),
+                      ],
                     ),
-                    const SizedBox(
-                      height: 60,
-                    ),
-                    Text(
-                      username,
-                      style: const TextStyle(
-                          fontSize: 25.0,
-                          color: Colors.blueGrey,
-                          letterSpacing: 2.0,
-                          fontWeight: FontWeight.w400),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      "$locality, $country",
-                      style: const TextStyle(
-                          fontSize: 18.0,
-                          color: Colors.black45,
-                          letterSpacing: 2.0,
-                          fontWeight: FontWeight.w300),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      timeago.format(timestamp.toDate()),
-                      style: const TextStyle(
-                          fontSize: 15.0,
-                          color: Colors.black45,
-                          letterSpacing: 2.0,
-                          fontWeight: FontWeight.w300),
-                    ),
-                  ],
+                  ),
                 ),
-                buttons: [
-                  DialogButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      "Ok",
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                    ),
-                  )
-                ]).show();
-          },
-          leading: CircleAvatar(
-            backgroundImage: CachedNetworkImageProvider(avatarUrl),
+              ],
+            ),
           ),
-          subtitle: Text(timeago.format(timestamp.toDate())),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              amountDonated > 0
-                  ? Lottie.asset('assets/dollar.json')
-                  : Container(),
-              Lottie.asset('assets/location.json'),
-            ],
-          ),
-        ),
-        const Divider(),
-      ],
+        ],
+      ),
     );
   }
 }

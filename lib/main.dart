@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: theme.copyWith(
         colorScheme: theme.colorScheme
-            .copyWith(primary: Colors.deepPurple,
+            .copyWith(primary: Constants.appColor,
           secondary: Constants.appColor,),
       ),
       home: const Home(),

@@ -36,13 +36,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.20.1"
-  auth_header:
-    dependency: transitive
-    description:
-      name: auth_header
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.0.1"
   badges:
     dependency: "direct main"
     description:
@@ -148,13 +141,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.15.0"
-  convert:
-    dependency: transitive
-    description:
-      name: convert
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.0.1"
   cross_file:
     dependency: transitive
     description:
@@ -169,13 +155,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.1"
-  cupertino_icons:
-    dependency: "direct main"
+  enum_to_string:
+    dependency: transitive
     description:
-      name: cupertino_icons
+      name: enum_to_string
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.4"
+    version: "2.0.1"
   fake_async:
     dependency: transitive
     description:
@@ -260,27 +246,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.8"
-  firebase_storage:
+  flag:
     dependency: "direct main"
     description:
-      name: firebase_storage
+      name: flag
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "10.2.8"
-  firebase_storage_platform_interface:
-    dependency: transitive
-    description:
-      name: firebase_storage_platform_interface
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "4.1.0"
-  firebase_storage_web:
-    dependency: transitive
-    description:
-      name: firebase_storage_web
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.2.9"
+    version: "6.0.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -293,13 +265,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.4"
-  flutter_braintree:
-    dependency: "direct main"
-    description:
-      name: flutter_braintree
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.3.1"
   flutter_cache_manager:
     dependency: transitive
     description:
@@ -307,13 +272,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.3.0"
-  flutter_dotenv:
-    dependency: "direct main"
-    description:
-      name: flutter_dotenv
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "5.0.2"
   flutter_easyloading:
     dependency: "direct main"
     description:
@@ -335,11 +293,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.4"
-  flutter_localizations:
-    dependency: transitive
-    description: flutter
-    source: sdk
-    version: "0.0.0"
   flutter_native_splash:
     dependency: "direct main"
     description:
@@ -483,13 +436,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.13.4"
-  http_auth:
-    dependency: "direct main"
-    description:
-      name: http_auth
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.1"
   http_parser:
     dependency: transitive
     description:
@@ -498,7 +444,7 @@ packages:
     source: hosted
     version: "4.0.0"
   image:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: image
       url: "https://pub.dartlang.org"
@@ -532,13 +478,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.17.0"
-  jaguar_jwt:
-    dependency: "direct main"
-    description:
-      name: jaguar_jwt
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.0.0"
   js:
     dependency: transitive
     description:
@@ -617,7 +556,7 @@ packages:
     source: hosted
     version: "1.0.0"
   path_provider:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: path_provider
       url: "https://pub.dartlang.org"
@@ -665,34 +604,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
-  pay:
-    dependency: "direct main"
-    description:
-      name: pay
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.8"
-  pay_android:
-    dependency: transitive
-    description:
-      name: pay_android
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.6"
-  pay_ios:
-    dependency: transitive
-    description:
-      name: pay_ios
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.6"
-  pay_platform_interface:
-    dependency: transitive
-    description:
-      name: pay_platform_interface
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.2"
   pedantic:
     dependency: transitive
     description:
