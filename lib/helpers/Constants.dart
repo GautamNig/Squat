@@ -8,8 +8,20 @@ class Constants {
   static const TextStyle appHeaderTextSTyle = TextStyle(
       fontFamily: "Signatra",
       fontSize: 30,
-      color: Colors.white
+      color: Colors.white,
   );
+
+  static createEventDetailscontainer(String text) {
+    return Container(
+      padding: const EdgeInsets.all(7.0),
+      decoration: BoxDecoration(
+          border: Border.all(color: Colors.white),
+          borderRadius: BorderRadius.circular(5.0)),
+      child: Text(
+        text,
+        style: const TextStyle(
+            color: Colors.white, overflow: TextOverflow.ellipsis),),);
+  }
 
   static Align createAttributionAlignWidget(
       String text, {AlignmentGeometry alignmentGeometry = Alignment.bottomRight}) {
@@ -21,4 +33,19 @@ class Constants {
       ),
     );
   }
+
+  static InputDecoration getTextFormFieldInputDecoration(String hintText) =>
+      InputDecoration(
+        hintText: hintText,
+        hintStyle:
+        const TextStyle(fontStyle: FontStyle.italic, fontSize: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(
+            width: 50,
+            style: BorderStyle.solid,
+          ),
+        ),
+        filled: true,
+        contentPadding: const EdgeInsets.all(16),);
 }

@@ -39,6 +39,12 @@ dependencies:
   audioplayers: ^0.20.1
   intl: ^0.17.0
   flag: ^6.0.0
+  flutter_datetime_picker: ^1.5.1
+  rxdart: ^0.27.3
+  flutter_countdown_timer: ^4.1.0
+  font_awesome_flutter: ^10.0.0
+  animations: ^2.0.2
+  blobs: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -51,16 +57,11 @@ flutter:
       fonts:
         - asset: assets/fonts/Signatra.ttf
   assets:
-    - assets/images/google_signin_button.png
-    - assets/images/soilder.jpg
-    - assets/images/nobully.png
-    - assets/images/search.png
-    - assets/images/notfound.png
-    - assets/rives/squat.riv
-    - assets/default_payment_profile_google_pay.json
-    - assets/donategirl.json
-    - assets/dollar.json
-    - assets/grunt.mp3
+    - assets/
+    - assets/json/
+    - assets/images/
+    - assets/rives/
+    - assets/fonts/
 
 flutter_icons:
   android: true

@@ -1,14 +1,7 @@
-import 'dart:convert';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
-import 'package:squat/json_parsers/json_parser_firebase_appSettings.dart';
-
 import '../helpers/Constants.dart';
 import '../widgets/paypal_payment.dart';
-import 'Home.dart';
 
 class Donation extends StatefulWidget {
   const Donation({Key? key}) : super(key: key);
@@ -44,6 +37,7 @@ class _DonationState extends State<Donation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Constants.appColor,
         title: const Center(
@@ -58,9 +52,9 @@ class _DonationState extends State<Donation> {
             children: [
               SingleChildScrollView(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Lottie.asset('assets/donategirl.json', height: 300),
+                    Lottie.asset('assets/json/donategirl.json', height: MediaQuery.of(context).size.height/2),
                     Padding(
                       padding: const EdgeInsets.all(18.0),
                       child: TextField(

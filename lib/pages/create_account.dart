@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:squat/widgets/header.dart';
-
 import '../helpers/Constants.dart';
 
 class CreateAccount extends StatefulWidget {
@@ -48,7 +46,7 @@ class _CreateAccountState extends State<CreateAccount> {
                   child: Center(
                     child: Text(
                       "Create a username",
-                      style: TextStyle(fontSize: 25.0),
+                      style: TextStyle(fontSize: 25.0, overflow: TextOverflow.ellipsis),
                     ),
                   ),
                 ),
@@ -63,7 +61,7 @@ class _CreateAccountState extends State<CreateAccount> {
                           if (val != null &&
                               (val.trim().length < 3 || val.isEmpty)) {
                             return "Username too short";
-                          } else if (val != null && val.trim().length > 12) {
+                          } else if (val != null && val.trim().length > 14) {
                             return "Username too long";
                           } else {
                             return null;

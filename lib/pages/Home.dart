@@ -11,9 +11,12 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:lottie/lottie.dart';
 import 'package:rive/rive.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:squat/pages/comments.dart';
 import 'package:squat/pages/donation.dart';
+import 'package:squat/pages/events.dart';
 import 'package:squat/pages/squat_stat.dart';
 import 'package:squat/pages/squatters.dart';
 import '../helpers/Constants.dart';
@@ -21,17 +24,20 @@ import '../json_parsers/json_parser_firebase_appSettings.dart';
 import '../json_parsers/json_parser_nytimes_articlesearch.dart';
 import '../models/user.dart';
 import '../widgets/progress.dart';
+import 'CreateEvent.dart';
 import 'create_account.dart';
 import 'package:badges/badges.dart';
 import 'package:odometer/odometer.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final usersRef = FirebaseFirestore.instance.collection('users');
+final eventsRef = FirebaseFirestore.instance.collection('events');
 final commentsRef = FirebaseFirestore.instance.collection('comments');
 final appSettingsRef = FirebaseFirestore.instance.collection('settings');
-
+final random = Random();
 late User currentUser;
 List<User>? squattersList = [];
 
@@ -53,7 +59,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Artboard? _startArtBoard;
   int squatersCount = 0;
   num totalGlobalSquatCount = 0;
-  final _random = Random();
+
   AnimationController? animationController;
   late Animation<OdometerNumber> animation;
 
@@ -69,10 +75,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   static const String _kPermissionGrantedMessage = 'Permission granted.';
 
   static num _timerDuration = 0;
-  StreamController _timerStream = StreamController<int>();
+  final StreamController _timerStream = BehaviorSubject();
   int timerCounter = 0;
   late Timer _resendCodeTimer;
   AudioCache audioCache = AudioCache();
+  bool _fireworksVisibility = false;
+  int min = 5;
+  int max = 100;
 
   // Usually we dispose the stuff created in init.
   @override
@@ -93,7 +102,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     animation =
         OdometerTween(begin: OdometerNumber(10000), end: OdometerNumber(12000))
             .animate(
-      CurvedAnimation(curve: Curves.easeIn, parent: animationController!),
+      CurvedAnimation(curve: Curves.bounceIn, parent: animationController!),
     );
 
     usersRef.get().then((querySnapshot) {
@@ -122,6 +131,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       Constants.appSettings =
           Configuration.fromJson(value.docs.first.data()).appSettings!;
       _timerDuration = int.parse(Constants.appSettings.squatWaitTime![0]);
+      if(_timerDuration == 0){
+         _timerDuration = min + random.nextInt(max - min);
+      }
     });
   }
 
@@ -295,6 +307,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     builder: (context, snapshotUsers) {
                       if (!snapshotUsers.hasData) return circularProgress();
 
+                      if(snapshot.data == 0) _fireworksVisibility = false;
+
                       squattersList = snapshotUsers.data?.docs
                           .map((e) => User.fromDocument(e))
                           .toList();
@@ -340,75 +354,87 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                     artboard: _startArtBoard!,
                                     fit: BoxFit.fill,
                                   ),
+                                  Visibility(
+                                      visible: _fireworksVisibility,
+                                      child: Lottie.asset('assets/json/fireworks.json')),
                                   Positioned(
-                                    top: 5,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        primary: Constants.appColor,
-                                      ),
-                                      onPressed: snapshot.data == 0
-                                          ? () async {
-                                              _timerStream.sink
-                                                  .add(_timerDuration);
-                                              activeCounter();
+                                    top: MediaQuery.of(context).size.height * 0.67,
+                                    right: 10,
+                                    child: Tooltip(
+                                      decoration: const BoxDecoration(color: Constants.appColor),
+                                      message: 'Perform a squat against russian bullying.',
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                                elevation:8),
+                                        onPressed: snapshot.data == 0
+                                            ? () async {
+                                                _timerStream.sink
+                                                    .add(_timerDuration);
+                                                activeCounter();
 
-                                              var uriToFetch =
-                                                  '${Constants.nyTimesBaseUri}?q=${Constants.appSettings.nyTimesApiSearchTerms![_random.nextInt(Constants.appSettings.nyTimesApiSearchTerms!.length)]}&api-key=${Constants.appSettings.nyTimesApiKey?.first}';
-                                              print(Uri.encodeFull(uriToFetch));
-                                              http
-                                                  .get(Uri.parse(uriToFetch))
-                                                  .then(onNYTimesUrlFetch);
+                                                var uriToFetch =
+                                                    '${Constants.nyTimesBaseUri}?q=${Constants.appSettings.nyTimesApiSearchTerms![random.nextInt(Constants.appSettings.nyTimesApiSearchTerms!.length)]}&api-key=${Constants.appSettings.nyTimesApiKey?.first}';
+                                                print(Uri.encodeFull(uriToFetch));
+                                                http
+                                                    .get(Uri.parse(uriToFetch))
+                                                    .then(onNYTimesUrlFetch);
 
-                                              _trigger?.value = true;
-                                              Future.delayed(
-                                                  const Duration(
-                                                      milliseconds: 1400), () async {
-                                                audioCache.play('grunt.mp3');
+                                                _trigger?.value = true;
+                                                Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 1400), (){
+                                                  audioCache.play('grunt.mp3');
+                                                  _fireworksVisibility = true;
+                                                });
 
+                                                Future.delayed(const Duration(milliseconds: 2000), () async{
                                                 currentUser.squatCount++;
                                                 await usersRef
                                                     .doc(currentUser?.id)
                                                     .update({
-                                                  "squatCount":
-                                                  currentUser.squatCount,
-                                                  "lastSquatTime": DateTime.now()
+                                                "squatCount":
+                                                currentUser.squatCount,
+                                                "lastSquatTime": DateTime.now()
                                                 });
-                                              });
-                                            }
-                                          : null,
-                                      child: Center(
-                                          child: snapshot.data == 0
-                                              ? const Text(
-                                                  'Squat against bully bear',
-                                                  style: Constants
-                                                      .appHeaderTextSTyle,
-                                                )
-                                              : Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: <Widget>[
-                                                    Text(
-                                                        'Resting for ${snapshot.hasData ? snapshot.data.toString() : _timerDuration} sec'),
-                                                  ],
-                                                )),
+                                                audioCache.play('doorclose.wav');
+                                                });
+                                              }
+                                            : null,
+                                        child: Center(
+                                            child: snapshot.data == 0
+                                                ? const Text(
+                                                    'Squat it',
+                                                    style: Constants
+                                                        .appHeaderTextSTyle,
+                                                  )
+                                                : Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.center,
+                                                    children: <Widget>[
+                                                      Text(
+                                                          'Rest: ${snapshot.hasData ? snapshot.data.toString() : _timerDuration} sec'),
+                                                    ],
+                                                  )),
+                                      ),
                                     ),
                                   ),
                                   Positioned(
-                                    top: 5,
-                                    right: 1,
-                                    child: IconButton(
-                                      onPressed: () {
-                                        googleSignIn.signOut();
-                                      },
-                                      icon: const Icon(
-                                        Icons.logout_sharp,
-                                        color: Constants.appColor,
+                                    top: MediaQuery.of(context).size.height * 0.67,
+                                    left: 10,
+                                    child: Tooltip(
+                                      decoration: const BoxDecoration(color: Constants.appColor),
+                                      message: 'Logout',
+                                      child: IconButton(
+                                        onPressed: () {
+                                          googleSignIn.signOut();
+                                        },
+                                        icon: const Icon(Icons.logout_sharp, color: Constants.appColor),
                                       ),
                                     ),
                                   ),
                                   Positioned(
                                     top: MediaQuery.of(context).size.height *
-                                        0.07,
+                                        0.025,
                                     left: 3,
                                     child: Column(
                                       children: [
@@ -417,7 +443,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                             borderRadius:
                                                 BorderRadius.circular(10.0),
                                           ),
-                                          color: Constants.appColor,
+                                          color: Colors.blueGrey,
                                           child: Container(
                                             height: 60,
                                             width: 100,
@@ -446,7 +472,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                                     'MY SQUATS',
                                                     style: TextStyle(
                                                         color: Colors.white,
-                                                        fontSize: 7),
+                                                        fontSize: 10),
                                                   )
                                                 ],
                                               ),
@@ -458,7 +484,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                   ),
                                   Positioned(
                                     top: MediaQuery.of(context).size.height *
-                                        0.07,
+                                        0.025,
                                     right: 1,
                                     child: Column(
                                       children: [
@@ -467,7 +493,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                             borderRadius:
                                                 BorderRadius.circular(10.0),
                                           ),
-                                          color: Constants.appColor,
+                                          color: Colors.blueGrey,
                                           child: Container(
                                             height: 60,
                                             width: 100,
@@ -496,7 +522,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                                     'WORLD SQUATS',
                                                     style: TextStyle(
                                                         color: Colors.white,
-                                                        fontSize: 7),
+                                                        fontSize: 10),
                                                   )
                                                 ],
                                               ),
@@ -507,12 +533,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                     ),
                                   ),
                                   Constants.createAttributionAlignWidget(
-                                      'Lumberjack Squats by Dante @rive.app')
+                                      'Lumberjack Squats by Dante @rive.app'),
+                                  Constants.createAttributionAlignWidget(
+                                  'Akiko @Lottie Files', alignmentGeometry: Alignment.bottomLeft)
                                 ]),
                           Squaters(),
                           Comments(userId: currentUser.id),
-                          const SquatStat(),
-                          const Donation()
+                          Events(),
+                          const Donation(),
                           // ActivityFeed(),
                           // Upload(currentUser:currentUser),
                           // Search(),
@@ -545,10 +573,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             ),
           ),
           const BottomNavigationBarItem(
-              icon: Icon(
-            Icons.comment_bank_outlined,
-          )),
-          const BottomNavigationBarItem(icon: Icon(Icons.stacked_bar_chart)),
+              icon: FaIcon(FontAwesomeIcons.solidCommentDots, size: 24)),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.event_available_rounded)),
           const BottomNavigationBarItem(
               icon: Icon(Icons.monetization_on_sharp)),
           // BottomNavigationBarItem(icon: Icon(Icons.search)),
@@ -563,17 +590,24 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       child: Scaffold(
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            Image.asset('assets/images/soilder.jpg'),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8.0, 12.0, 8.0, 12.0),
+              child: Image.asset('assets/images/bear.png'),
+            ),
             const Text(
-              'Squat against bully bear',
-              style: Constants.appHeaderTextSTyle,
+              'Squat against the russian bear',
+              style: TextStyle(
+                  fontFamily: "Signatra",
+                  fontSize: 40,
+                  color: Colors.black
+              ),
             ),
             GestureDetector(
               onTap: login,
               child: Container(
-                width: 260,
+                width: 200,
                 height: 60,
                 decoration: const BoxDecoration(
                     image: DecorationImage(
@@ -619,15 +653,15 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         result.response != null &&
         result.response!.docs!.isNotEmpty) {
       var newsResult = result.response
-          ?.docs![_random.nextInt(result.response!.docs!.length)].snippet;
+          ?.docs![random.nextInt(result.response!.docs!.length)].snippet;
 
       if (newsResult != null && newsResult.isNotEmpty) {
         snackBarText = newsResult;
       }else{
-        snackBarText = Constants.appSettings.generalMessages![_random.nextInt(Constants.appSettings.generalMessages!.length)];
+        snackBarText = Constants.appSettings.generalMessages![random.nextInt(Constants.appSettings.generalMessages!.length)];
       }
     }else{
-      snackBarText = Constants.appSettings.generalMessages![_random.nextInt(Constants.appSettings.generalMessages!.length)];
+      snackBarText = Constants.appSettings.generalMessages![random.nextInt(Constants.appSettings.generalMessages!.length)];
     }
 
     var snackBar = SnackBar(
