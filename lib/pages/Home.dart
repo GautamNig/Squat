@@ -17,19 +17,18 @@ import 'package:rxdart/rxdart.dart';
 import 'package:squat/pages/comments.dart';
 import 'package:squat/pages/donation.dart';
 import 'package:squat/pages/events.dart';
-import 'package:squat/pages/squat_stat.dart';
+import 'package:squat/pages/news_page.dart';
 import 'package:squat/pages/squatters.dart';
 import '../helpers/Constants.dart';
 import '../json_parsers/json_parser_firebase_appSettings.dart';
 import '../json_parsers/json_parser_nytimes_articlesearch.dart';
 import '../models/user.dart';
 import '../widgets/progress.dart';
-import 'CreateEvent.dart';
 import 'create_account.dart';
 import 'package:badges/badges.dart';
 import 'package:odometer/odometer.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:http/http.dart' as http;
+
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 final GoogleSignIn googleSignIn = GoogleSignIn();
@@ -40,6 +39,7 @@ final appSettingsRef = FirebaseFirestore.instance.collection('settings');
 final random = Random();
 late User currentUser;
 List<User>? squattersList = [];
+NYTimesArticleSearch? nYTimesArticleSearchResult;
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -80,6 +80,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late Timer _resendCodeTimer;
   AudioCache audioCache = AudioCache();
   bool _fireworksVisibility = false;
+
   int min = 5;
   int max = 100;
 
@@ -102,8 +103,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     animation =
         OdometerTween(begin: OdometerNumber(10000), end: OdometerNumber(12000))
             .animate(
-      CurvedAnimation(curve: Curves.bounceIn, parent: animationController!),
-    );
+          CurvedAnimation(curve: Curves.bounceIn, parent: animationController!),
+        );
 
     usersRef.get().then((querySnapshot) {
       querySnapshot.docs.forEach((doc) {
@@ -129,10 +130,12 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     getLocationAndSetupRive();
     appSettingsRef.get().then((value) {
       Constants.appSettings =
-          Configuration.fromJson(value.docs.first.data()).appSettings!;
+      Configuration
+          .fromJson(value.docs.first.data())
+          .appSettings!;
       _timerDuration = int.parse(Constants.appSettings.squatWaitTime![0]);
-      if(_timerDuration == 0){
-         _timerDuration = min + random.nextInt(max - min);
+      if (_timerDuration == 0) {
+        _timerDuration = min + random.nextInt(max - min);
       }
     });
   }
@@ -148,7 +151,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       final file = RiveFile.import(data);
       final artBoard = file.mainArtboard;
       var controller =
-          StateMachineController.fromArtboard(artBoard, 'Don\'t Skip Leg Day');
+      StateMachineController.fromArtboard(artBoard, 'Don\'t Skip Leg Day');
       if (controller != null) {
         artBoard.addController(controller);
         _trigger = controller.findInput('Squat');
@@ -255,16 +258,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   createUserInFirestore() async {
-    // 1) check if user exists in users collection in database (according to their id)
     final GoogleSignInAccount? user = googleSignIn.currentUser;
     DocumentSnapshot doc = await usersRef.doc(user?.id).get();
 
     if (!doc.exists) {
-      // 2) if the user doesn't exist, then we want to take them to the create account page
       final username = await Navigator.push(
           context, MaterialPageRoute(builder: (context) => CreateAccount()));
 
-      // 3) get username from create account, use it to make new user document in users collection
       usersRef.doc(user?.id).set({
         "id": user?.id,
         "username": username,
@@ -307,14 +307,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     builder: (context, snapshotUsers) {
                       if (!snapshotUsers.hasData) return circularProgress();
 
-                      if(snapshot.data == 0) _fireworksVisibility = false;
+                      if (snapshot.data == 0) _fireworksVisibility = false;
+
+                      print('${snapshotUsers.data?.docs.length}');
 
                       squattersList = snapshotUsers.data?.docs
                           .map((e) => User.fromDocument(e))
                           .toList();
                       // squattersList?.sort((a,b) => b.joiningDateTime.compareTo(a.joiningDateTime));
                       var squattersSquatCountList =
-                          squattersList?.map((e) => e.squatCount);
+                      squattersList?.map((e) => e.squatCount);
 
                       currentUser = squattersList?.firstWhere(
                               (element) => element.id == currentUser.id) ??
@@ -350,196 +352,219 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                           _startArtBoard == null
                               ? const SizedBox()
                               : Stack(alignment: Alignment.center, children: [
-                                  Rive(
-                                    artboard: _startArtBoard!,
-                                    fit: BoxFit.fill,
-                                  ),
-                                  Visibility(
-                                      visible: _fireworksVisibility,
-                                      child: Lottie.asset('assets/json/fireworks.json')),
-                                  Positioned(
-                                    top: MediaQuery.of(context).size.height * 0.67,
-                                    right: 10,
-                                    child: Tooltip(
-                                      decoration: const BoxDecoration(color: Constants.appColor),
-                                      message: 'Perform a squat against russian bullying.',
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                                elevation:8),
-                                        onPressed: snapshot.data == 0
-                                            ? () async {
-                                                _timerStream.sink
-                                                    .add(_timerDuration);
-                                                activeCounter();
+                            Rive(
+                              artboard: _startArtBoard!,
+                              fit: BoxFit.fill,
+                            ),
+                            Visibility(
+                                visible: _fireworksVisibility,
+                                child: Lottie.asset(
+                                    'assets/json/fireworks.json')),
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Lottie.asset(
+                                  'assets/json/flame.json'),
+                            ),
+                            Positioned(
+                              top: MediaQuery
+                                  .of(context)
+                                  .size
+                                  .height * 0.67,
+                              right: 10,
+                              child: Tooltip(
+                                decoration: const BoxDecoration(
+                                    color: Constants.appColor),
+                                message: 'Perform a squat against russian bullying.',
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      elevation: 8),
+                                  onPressed: snapshot.data == 0
+                                      ? () async {
+                                    _timerStream.sink
+                                        .add(_timerDuration);
+                                    activeCounter();
 
-                                                var uriToFetch =
-                                                    '${Constants.nyTimesBaseUri}?q=${Constants.appSettings.nyTimesApiSearchTerms![random.nextInt(Constants.appSettings.nyTimesApiSearchTerms!.length)]}&api-key=${Constants.appSettings.nyTimesApiKey?.first}';
-                                                print(Uri.encodeFull(uriToFetch));
-                                                http
-                                                    .get(Uri.parse(uriToFetch))
-                                                    .then(onNYTimesUrlFetch);
+                                    _trigger?.value = true;
+                                    Future.delayed(
+                                        const Duration(
+                                            milliseconds: 1400), () {
+                                      audioCache.play('grunt.mp3');
+                                      //_fireworksVisibility = true;
+                                    });
 
-                                                _trigger?.value = true;
-                                                Future.delayed(
-                                                    const Duration(
-                                                        milliseconds: 1400), (){
-                                                  audioCache.play('grunt.mp3');
-                                                  _fireworksVisibility = true;
-                                                });
-
-                                                Future.delayed(const Duration(milliseconds: 2000), () async{
-                                                currentUser.squatCount++;
-                                                await usersRef
-                                                    .doc(currentUser?.id)
-                                                    .update({
-                                                "squatCount":
-                                                currentUser.squatCount,
-                                                "lastSquatTime": DateTime.now()
-                                                });
-                                                audioCache.play('doorclose.wav');
-                                                });
-                                              }
-                                            : null,
-                                        child: Center(
-                                            child: snapshot.data == 0
-                                                ? const Text(
-                                                    'Squat it',
-                                                    style: Constants
-                                                        .appHeaderTextSTyle,
-                                                  )
-                                                : Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.center,
-                                                    children: <Widget>[
-                                                      Text(
-                                                          'Rest: ${snapshot.hasData ? snapshot.data.toString() : _timerDuration} sec'),
-                                                    ],
-                                                  )),
+                                    Future.delayed(const Duration(
+                                        milliseconds: 2000), () async {
+                                      currentUser.squatCount++;
+                                      await usersRef
+                                          .doc(currentUser?.id)
+                                          .update({
+                                        "squatCount":
+                                        currentUser.squatCount,
+                                        "lastSquatTime": DateTime.now()
+                                      });
+                                      audioCache.play('doorclose.wav');
+                                    });
+                                    Future.delayed(const Duration(
+                                        milliseconds: 2600), () async {
+                                      _fireworksVisibility = true;
+                                    });
+                                  }
+                                      : null,
+                                  child: Center(
+                                      child: snapshot.data == 0
+                                          ? const Text(
+                                        'Squat it',
+                                        style: Constants
+                                            .appHeaderTextSTyle,
+                                      )
+                                          : Row(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Text(
+                                              'Rest: ${snapshot.hasData
+                                                  ? snapshot.data.toString()
+                                                  : _timerDuration} sec'),
+                                        ],
+                                      )),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: MediaQuery
+                                  .of(context)
+                                  .size
+                                  .height * 0.67,
+                              left: 10,
+                              child: Tooltip(
+                                decoration: const BoxDecoration(
+                                    color: Constants.appColor),
+                                message: 'Logout',
+                                child: IconButton(
+                                  onPressed: () {
+                                    googleSignIn.signOut();
+                                  },
+                                  icon: const Icon(Icons.logout_sharp,
+                                      color: Constants.appColor),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: MediaQuery
+                                  .of(context)
+                                  .size
+                                  .height *
+                                  0.025,
+                              left: 3,
+                              child: Column(
+                                children: [
+                                  Card(
+                                    shape: BeveledRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(10.0),
+                                    ),
+                                    color: Colors.blueGrey,
+                                    child: Container(
+                                      height: 60,
+                                      width: 100,
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                          children: [
+                                            AnimatedSlideOdometerNumber(
+                                              letterWidth: 15,
+                                              odometerNumber:
+                                              OdometerNumber(
+                                                  currentUser
+                                                      .squatCount),
+                                              duration: const Duration(
+                                                  seconds: 1),
+                                              numberTextStyle:
+                                              const TextStyle(
+                                                  fontSize: 30,
+                                                  color: Colors.white,
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .bold),
+                                            ),
+                                            const Text(
+                                              'MY SQUATS',
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10),
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  Positioned(
-                                    top: MediaQuery.of(context).size.height * 0.67,
-                                    left: 10,
-                                    child: Tooltip(
-                                      decoration: const BoxDecoration(color: Constants.appColor),
-                                      message: 'Logout',
-                                      child: IconButton(
-                                        onPressed: () {
-                                          googleSignIn.signOut();
-                                        },
-                                        icon: const Icon(Icons.logout_sharp, color: Constants.appColor),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: MediaQuery
+                                  .of(context)
+                                  .size
+                                  .height *
+                                  0.025,
+                              right: 1,
+                              child: Column(
+                                children: [
+                                  Card(
+                                    shape: BeveledRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(10.0),
+                                    ),
+                                    color: Colors.blueGrey,
+                                    child: Container(
+                                      height: 60,
+                                      width: 100,
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                          children: [
+                                            AnimatedSlideOdometerNumber(
+                                              letterWidth: 15,
+                                              odometerNumber:
+                                              OdometerNumber(
+                                                  totalGlobalSquatCount
+                                                      .toInt()),
+                                              duration: const Duration(
+                                                  seconds: 1),
+                                              numberTextStyle:
+                                              const TextStyle(
+                                                  fontSize: 30,
+                                                  color: Colors.white,
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .bold),
+                                            ),
+                                            const Text(
+                                              'WORLD SQUATS',
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10),
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  Positioned(
-                                    top: MediaQuery.of(context).size.height *
-                                        0.025,
-                                    left: 3,
-                                    child: Column(
-                                      children: [
-                                        Card(
-                                          shape: BeveledRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                          ),
-                                          color: Colors.blueGrey,
-                                          child: Container(
-                                            height: 60,
-                                            width: 100,
-                                            child: Center(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  AnimatedSlideOdometerNumber(
-                                                    letterWidth: 15,
-                                                    odometerNumber:
-                                                        OdometerNumber(
-                                                            currentUser
-                                                                .squatCount),
-                                                    duration: const Duration(
-                                                        seconds: 1),
-                                                    numberTextStyle:
-                                                        const TextStyle(
-                                                            fontSize: 30,
-                                                            color: Colors.white,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                  ),
-                                                  const Text(
-                                                    'MY SQUATS',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 10),
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: MediaQuery.of(context).size.height *
-                                        0.025,
-                                    right: 1,
-                                    child: Column(
-                                      children: [
-                                        Card(
-                                          shape: BeveledRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                          ),
-                                          color: Colors.blueGrey,
-                                          child: Container(
-                                            height: 60,
-                                            width: 100,
-                                            child: Center(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  AnimatedSlideOdometerNumber(
-                                                    letterWidth: 15,
-                                                    odometerNumber:
-                                                        OdometerNumber(
-                                                            totalGlobalSquatCount
-                                                                .toInt()),
-                                                    duration: const Duration(
-                                                        seconds: 1),
-                                                    numberTextStyle:
-                                                        const TextStyle(
-                                                            fontSize: 30,
-                                                            color: Colors.white,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                  ),
-                                                  const Text(
-                                                    'WORLD SQUATS',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 10),
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Constants.createAttributionAlignWidget(
-                                      'Lumberjack Squats by Dante @rive.app'),
-                                  Constants.createAttributionAlignWidget(
-                                  'Akiko @Lottie Files', alignmentGeometry: Alignment.bottomLeft)
-                                ]),
+                                ],
+                              ),
+                            ),
+                            Constants.createAttributionAlignWidget(
+                                'Lumberjack Squats by Dante @rive.app'),
+                            Constants.createAttributionAlignWidget(
+                                'Akiko/Tom Fabre @Lottie Files',
+                                alignmentGeometry: Alignment.bottomLeft)
+                          ]),
                           Squaters(),
                           Comments(userId: currentUser.id),
                           Events(),
+                          const NewsPage(),
                           const Donation(),
                           // ActivityFeed(),
                           // Upload(currentUser:currentUser),
@@ -577,9 +602,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           const BottomNavigationBarItem(
               icon: Icon(Icons.event_available_rounded)),
           const BottomNavigationBarItem(
+              icon: FaIcon(FontAwesomeIcons.earthAmericas, size: 24)),
+          const BottomNavigationBarItem(
               icon: Icon(Icons.monetization_on_sharp)),
-          // BottomNavigationBarItem(icon: Icon(Icons.search)),
-          // BottomNavigationBarItem(icon: Icon(Icons.account_circle)),
         ],
       ),
     );
@@ -636,42 +661,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   activeCounter() {
     _resendCodeTimer =
         Timer.periodic(const Duration(seconds: 1), (Timer timer) {
-      if (_timerDuration - timer.tick > 0) {
-        _timerStream.sink.add(_timerDuration - timer.tick);
-      } else {
-        _timerStream.sink.add(0);
-        _resendCodeTimer.cancel();
-      }
-    });
-  }
-
-  FutureOr onNYTimesUrlFetch(http.Response value) {
-    var result = NYTimesArticleSearch.fromJson(jsonDecode(value.body));
-    String snackBarText = '';
-
-    if (result.status == "OK" &&
-        result.response != null &&
-        result.response!.docs!.isNotEmpty) {
-      var newsResult = result.response
-          ?.docs![random.nextInt(result.response!.docs!.length)].snippet;
-
-      if (newsResult != null && newsResult.isNotEmpty) {
-        snackBarText = newsResult;
-      }else{
-        snackBarText = Constants.appSettings.generalMessages![random.nextInt(Constants.appSettings.generalMessages!.length)];
-      }
-    }else{
-      snackBarText = Constants.appSettings.generalMessages![random.nextInt(Constants.appSettings.generalMessages!.length)];
-    }
-
-    var snackBar = SnackBar(
-        backgroundColor: Constants.appColor,
-        duration: Duration(milliseconds: int.parse(Constants.appSettings.snackBarTimeDuration!.first)),
-        content: Text(
-          snackBarText,
-          style: const TextStyle(fontStyle: FontStyle.italic),
-        ));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+          if (_timerDuration - timer.tick > 0) {
+            _timerStream.sink.add(_timerDuration - timer.tick);
+          } else {
+            _timerStream.sink.add(0);
+            _resendCodeTimer.cancel();
+          }
+        });
   }
 }
 

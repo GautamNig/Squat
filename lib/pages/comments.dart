@@ -209,7 +209,7 @@ class CommentsState extends State<Comments> {
                   onPressed: () async {
                     var gif = await GiphyPicker.pickGif(
                         context: context,
-                        apiKey: Constants.appSettings.giphyTestKey![0]);
+                        apiKey: Constants.appSettings.giphyKey![0]);
                     if (gif != null) {
                       setState(() => _gif = gif);
                     }

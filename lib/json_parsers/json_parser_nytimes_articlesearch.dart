@@ -50,13 +50,13 @@ class Docs {
   String? leadParagraph;
   String? source;
   String? pubDate;
-
+  List<Multimedia>? multimedia;
   Docs(
       {this.abstract,
         this.snippet,
         this.leadParagraph,
         this.source,
-        this.pubDate});
+        this.pubDate, this.multimedia});
 
   Docs.fromJson(Map<String, dynamic> json) {
     abstract = json['abstract'];
@@ -64,6 +64,12 @@ class Docs {
     leadParagraph = json['lead_paragraph'];
     source = json['source'];
     pubDate = json['pub_date'];
+    if (json['multimedia'] != null) {
+      multimedia = <Multimedia>[];
+      json['multimedia'].forEach((v) {
+        multimedia!.add(Multimedia.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -73,6 +79,22 @@ class Docs {
     data['lead_paragraph'] = leadParagraph;
     data['source'] = source;
     data['pub_date'] = pubDate;
+    return data;
+  }
+}
+
+class Multimedia {
+  String? url;
+
+  Multimedia({this.url});
+
+  Multimedia.fromJson(Map<String, dynamic> json) {
+    url = json['url'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['url'] = url;
     return data;
   }
 }

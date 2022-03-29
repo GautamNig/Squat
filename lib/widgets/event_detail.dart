@@ -20,7 +20,7 @@ class EventDetail extends StatelessWidget {
       children: <Widget>[
         const SizedBox(height: 50.0),
         const FaIcon(
-          FontAwesomeIcons.peoplePulling,
+          FontAwesomeIcons.peopleGroup,
           color: Colors.white,
           size: 20.0,
         ),
@@ -34,18 +34,22 @@ class EventDetail extends StatelessWidget {
           child: Tooltip(
             decoration: const BoxDecoration(color: Constants.appColor),
             message: event.eventName,
-            child: Text(
-              event.eventName,
-              style: const TextStyle(color: Colors.white, fontSize: 45.0, overflow: TextOverflow.ellipsis),
-            ),
+            child: Constants.getAutoSizeText(event.eventName, color: Colors.white),
           ),
         ),
         Padding(
-            padding: const EdgeInsets.only(left: 10.0),
-            child: Text(
-              event.createdByUsername,
-              style: const TextStyle(color: Colors.white, overflow: TextOverflow.ellipsis),
-            )),
+          padding: const EdgeInsets.all(10.0),
+          child: Row(
+            children: [
+              const FaIcon(FontAwesomeIcons.user, color: Colors.white),
+              const SizedBox(width: 10,),
+              Text(
+                event.createdByUsername,
+                style: const TextStyle(color: Colors.white, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.all(10.0),
           child: Row(
@@ -65,7 +69,7 @@ class EventDetail extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.all(10.0),
-          child: Constants.createEventDetailscontainer('Subscribers: ${event.eventEnrolledByIds.length.toString()}'),
+          child: Constants.createEventDetailscontainer('Participants: ${event.eventEnrolledByIds.length.toString()}'),
         ),
       ],
     );
@@ -100,7 +104,7 @@ class EventDetail extends StatelessWidget {
           height: MediaQuery.of(context).size.height * 0.5,
           padding: const EdgeInsets.all(10.0),
           width: MediaQuery.of(context).size.width,
-          decoration: const BoxDecoration(color: Color.fromRGBO(58, 66, 86, .9)),
+          decoration: const BoxDecoration(color: Color.fromRGBO(58, 66, 86, .8)),
           child: topContentText,
         ),
         Positioned(

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_countdown_timer/current_remaining_time.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:squat/pages/news_page.dart';
 import 'package:squat/widgets/progress.dart';
 import '../helpers/Constants.dart';
 import '../models/event.dart';
@@ -144,183 +145,166 @@ class _EventWidgetState extends State<EventWidget> {
             ),
           ),
           margin: const EdgeInsets.only(left: 5),
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                widget.event!.giphyUrl.isNotEmpty
-                    ? Column(
-                      children: [
-                        CachedNetworkImage(
-                            imageUrl: widget.event!.giphyUrl,
-                            imageBuilder: (context, imageProvider) => Container(
-                              width: 110,
-                              height: 110.0,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.rectangle,
-                                image: DecorationImage(
-                                    image: imageProvider, fit: BoxFit.cover),
-                              ),
-                            ),
-                            placeholder: (context, url) =>
-                                const CircularProgressIndicator(),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.error),
-                          ),
-                        Text(
-                          widget.event!.eventStatus,
-                          style: const TextStyle(
-                              color: Colors.red, overflow: TextOverflow.ellipsis,
-                              fontSize: 20,
-                              fontStyle: FontStyle.italic),
-                        )
-                      ],
-                    )
-                    : Column(
-                      children: [
-                        Container(
-                            width: 110.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              widget.event!.giphyUrl.isNotEmpty
+                  ? Column(
+                    children: [
+                      CachedNetworkImage(
+                          imageUrl: widget.event!.giphyUrl,
+                          imageBuilder: (context, imageProvider) => Container(
+                            width: 110,
                             height: 110.0,
-                            decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: AssetImage('assets/images/nobully.png'),
-                                  fit: BoxFit.cover,
-                                ))),
-                        Text(
-                          widget.event!.eventStatus,
-                          style: const TextStyle(
-                              color: Colors.red, overflow: TextOverflow.ellipsis,
-                              fontSize: 20,
-                              fontStyle: FontStyle.italic),
-                        )
-                      ],
-                    ),
-                Stack(
-                  children: [
-                    Visibility(
-                      visible: widget.event!.eventStatus == '',
-                      child: CountdownTimer(
-                        endTime:
-                            widget.event!.eventOccurrenceDateTime.millisecondsSinceEpoch,
-                        onEnd: () {
-                          if (widget.event!.eventStatus == 'EXPIRED' ||
-                              widget.event!.eventStatus == 'LIVE') return;
-
-                          audioCache.play('bell.mp3');
-
-                          eventsRef
-                              .doc(widget.event!.eventId)
-                              .update({'eventStatus': 'LIVE'});
-                        },
-                        widgetBuilder: (_, CurrentRemainingTime? time) {
-                          if (time == null) {
-                            return Container();
-                          }
-                          return Text(
-                            'Live in:\n${time.days ?? '00'}:${time.hours ?? '00'}:${time.min ?? '00'}:${time.sec ?? '00'}',
-                            style: const TextStyle(
-                                color: Constants.appColor,
-                                overflow: TextOverflow.ellipsis,
-                                fontSize: 20,
-                                fontStyle: FontStyle.italic),
-                          );
-                        },
-                      ),
-                    ),
-                    Visibility(
-                      visible: widget.event!.eventStatus == 'LIVE',
-                      child: CountdownTimer(
-                        endTime: widget.event!.eventEndDateTime.millisecondsSinceEpoch,
-                        widgetBuilder: (_, CurrentRemainingTime? time) {
-                          if (time == null) {
-                            return Container();
-                          }
-                          return Text(
-                            'Ends in:\n${time.days ?? '00'}:${time.hours ?? '00'}:${time.min ?? '00'}:${time.sec ?? '00'}',
-                            style: const TextStyle(
-                                color: Constants.appColor, overflow: TextOverflow.ellipsis,
-                                fontSize: 20,
-                                fontStyle: FontStyle.italic),
-                          );
-                        },
-                        onEnd: () {
-                          if (widget.event!.eventStatus == 'EXPIRED') return;
-                          eventsRef
-                              .doc(widget.event!.eventId)
-                              .update({'eventStatus': 'EXPIRED'});
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 18.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Tooltip(
-                          decoration: const BoxDecoration(color: Constants.appColor),
-                          message: widget.event.eventName,
-                          child: Text(widget.event!.eventName,
-                              style: const TextStyle(
-                                  overflow: TextOverflow.ellipsis,
-                                  fontStyle: FontStyle.italic,
-                                  color: Constants.appColor,
-                                  fontSize: 18)),
-                        ),
-                        Badge(
-                          badgeColor: Constants.appColor,
-                          showBadge:
-                              widget.event!.eventEnrolledByIds.isEmpty ? false : true,
-                          position: BadgePosition.topEnd(top: 0, end: -8),
-                          animationDuration: const Duration(milliseconds: 300),
-                          animationType: BadgeAnimationType.fade,
-                          badgeContent: Text(
-                              NumberFormat.compact()
-                                  .format(widget.event!.eventEnrolledByIds.length),
-                              style: const TextStyle(color: Colors.white)),
-                          child: IconButton(
-                            onPressed: widget.event!.eventStatus == 'EXPIRED'
-                                ? null
-                                : () async {
-                                    if (widget.event!.eventEnrolledByIds
-                                        .contains(currentUser.id)) {
-                                      widget.event!.eventEnrolledByIds
-                                          .remove(currentUser.id);
-                                      await eventsRef.doc(widget.event!.eventId).update({
-                                        'eventEnrolledByIds': List<dynamic>.from(
-                                            widget.event!.eventEnrolledByIds)
-                                      });
-                                    } else {
-                                      widget.event!.eventEnrolledByIds.add(currentUser.id);
-                                      await eventsRef.doc(widget.event!.eventId).update({
-                                        'eventEnrolledByIds': List<dynamic>.from(
-                                            widget.event!.eventEnrolledByIds)
-                                      });
-                                    }
-                                  },
-                            icon: Icon(
-                              Icons.supervised_user_circle,
-                              size: 35,
-                              color:
-                                  widget.event!.eventEnrolledByIds.contains(currentUser.id)
-                                      ? Constants.appColor
-                                      : Colors.grey,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              image: DecorationImage(
+                                  image: imageProvider, fit: BoxFit.cover),
                             ),
                           ),
-                        )
+                          placeholder: (context, url) =>
+                              const CircularProgressIndicator(),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
+                        ),
+                      Text(
+                        widget.event!.eventStatus,
+                        style: const TextStyle(
+                            color: Colors.red, overflow: TextOverflow.ellipsis,
+                            fontSize: 20,
+                            fontStyle: FontStyle.italic),
+                      )
+                    ],
+                  )
+                  : Column(
+                    children: [
+                      Container(
+                          width: 110.0,
+                          height: 110.0,
+                          decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                image: AssetImage('assets/images/nobully.png'),
+                                fit: BoxFit.cover,
+                              ))),
+                      Text(
+                        widget.event!.eventStatus,
+                        style: const TextStyle(
+                            color: Colors.red, overflow: TextOverflow.ellipsis,
+                            fontSize: 20,
+                            fontStyle: FontStyle.italic),
+                      )
+                    ],
+                  ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Constants.getAutoSizeText(widget.event!.eventName, fontWeight: FontWeight.bold),
+                        const SizedBox(height: 20,),
+                        Stack(
+                          children: [
+                            Visibility(
+                              visible: widget.event!.eventStatus == '',
+                              child: Padding(padding: const EdgeInsets.only(left: 4, right: 4), child: CountdownTimer(
+                                endTime:
+                                widget.event!.eventOccurrenceDateTime.millisecondsSinceEpoch,
+                                onEnd: () {
+                                  if (widget.event!.eventStatus == 'EXPIRED' ||
+                                      widget.event!.eventStatus == 'LIVE') return;
+
+                                  audioCache.play('bell.mp3');
+
+                                  eventsRef
+                                      .doc(widget.event!.eventId)
+                                      .update({'eventStatus': 'LIVE'});
+                                },
+                                widgetBuilder: (_, CurrentRemainingTime? time) {
+                                  if (time == null) {
+                                    return Container();
+                                  }
+                                  return Constants.getAutoSizeText(
+                                      'Live in: ${time.days ?? '00'}:${time.hours ?? '00'}:${time.min ?? '00'}:${time.sec ?? '00'}',
+                                    fontSize: 14, color: Colors.red, maxLines: 1,
+                                  );
+                                },
+                              ),),
+                            ),
+                            Visibility(
+                              visible: widget.event!.eventStatus == 'LIVE',
+                              child: Padding(padding: const EdgeInsets.only(left: 4, right: 4), child: CountdownTimer(
+                                endTime: widget.event!.eventEndDateTime.millisecondsSinceEpoch,
+                                widgetBuilder: (_, CurrentRemainingTime? time) {
+                                  if (time == null) {
+                                    return Container();
+                                  }
+                                  return Constants.getAutoSizeText(
+                                  'Ends in: ${time.days ?? '00'}:${time.hours ?? '00'}:${time.min ?? '00'}:${time.sec ?? '00'}',
+                                    fontSize: 14, color: Colors.red, maxLines: 1,
+                                  );
+                                },
+                                onEnd: () {
+                                  if (widget.event!.eventStatus == 'EXPIRED') return;
+                                  eventsRef
+                                      .doc(widget.event!.eventId)
+                                      .update({'eventStatus': 'EXPIRED'});
+                                },
+                              ),
+                              ),),
+                          ],
+                        ),
+
                         // Expanded(child: Text('$locality, $country',
                         //   style: const TextStyle(overflow: TextOverflow.ellipsis,),),),
                       ],
                     ),
+                ),
+              ),
+              Padding(padding: const EdgeInsets.only(right: 8), child: Badge(
+                badgeColor: Constants.appColor,
+                showBadge:
+                widget.event!.eventEnrolledByIds.isEmpty ? false : true,
+                position: BadgePosition.topEnd(top: 0, end: -8),
+                animationDuration: const Duration(milliseconds: 300),
+                animationType: BadgeAnimationType.fade,
+                badgeContent: Text(
+                    NumberFormat.compact()
+                        .format(widget.event!.eventEnrolledByIds.length),
+                    style: const TextStyle(color: Colors.white)),
+                child: IconButton(
+                  onPressed: widget.event!.eventStatus == 'EXPIRED'
+                      ? null
+                      : () async {
+                    if (widget.event!.eventEnrolledByIds
+                        .contains(currentUser.id)) {
+                      widget.event!.eventEnrolledByIds
+                          .remove(currentUser.id);
+                      await eventsRef.doc(widget.event!.eventId).update({
+                        'eventEnrolledByIds': List<dynamic>.from(
+                            widget.event!.eventEnrolledByIds)
+                      });
+                    } else {
+                      widget.event!.eventEnrolledByIds.add(currentUser.id);
+                      await eventsRef.doc(widget.event!.eventId).update({
+                        'eventEnrolledByIds': List<dynamic>.from(
+                            widget.event!.eventEnrolledByIds)
+                      });
+                    }
+                  },
+                  icon: Icon(
+                    Icons.supervised_user_circle,
+                    size: 35,
+                    color:
+                    widget.event!.eventEnrolledByIds.contains(currentUser.id)
+                        ? Constants.appColor
+                        : Colors.grey,
                   ),
                 ),
-              ],
-            ),
+              ),),
+            ],
           ),
         ),
       ),

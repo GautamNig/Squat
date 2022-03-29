@@ -1,5 +1,5 @@
 import 'package:animations/animations.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flag/flag.dart';
 import 'package:flag/flag_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,8 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:squat/pages/profile_page.dart';
 import 'package:squat/pages/squat_stat.dart';
-import 'package:squat/widgets/header.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import '../helpers/Constants.dart';
 import '../helpers/shared_axis_page_route.dart';
 import '../models/user.dart';
@@ -120,21 +118,10 @@ class _UserWidgetState extends State<UserWidget> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
+                        Expanded(child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Container(
-                                width: MediaQuery.of(context).size.width/4,
-                                child: Tooltip(
-                                  decoration: const BoxDecoration(color: Constants.appColor),
-                                  message: widget.user.username,
-                                  child: Text(widget.user.username,
-                                      style: const TextStyle(
-                                          overflow: TextOverflow.ellipsis,
-                                          fontStyle: FontStyle.italic,
-                                          color: Constants.appColor, fontSize: 20)),
-                                ),
-                              ),
+                              Expanded(child: Constants.getAutoSizeText(widget.user.username)),
                               widget.user.amountDonated > 0
                                   ? Container(
                                       height: 80,
@@ -145,8 +132,8 @@ class _UserWidgetState extends State<UserWidget> {
                                       width: 60,
                                     ),
                             ],
-                          ),
-                        Container(
+                          ),),
+                        Expanded(child: Container(
                           width: MediaQuery.of(context).size.width/5,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -185,8 +172,8 @@ class _UserWidgetState extends State<UserWidget> {
                               ),
                             ],
                           ),
-                        ),
-                        Padding(
+                        )),
+                        Expanded(child: Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: Flag.fromString(
                             widget.user.isoCountryCode,
@@ -195,11 +182,11 @@ class _UserWidgetState extends State<UserWidget> {
                             replacement:
                             Container(),
                           ),
-                        )
+                        ))
                       ],
                     ),
-                    Expanded(child: Text('${widget.user.locality}, ${widget.user.country}',
-                      style: const TextStyle(overflow: TextOverflow.ellipsis,),),),
+                    Expanded(child: Constants.getAutoSizeText('${widget.user.locality}, ${widget.user.country}',
+                    maxLines: 1),)
                   ],
                 ),
               ),

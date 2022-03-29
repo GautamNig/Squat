@@ -131,7 +131,7 @@ class CreateEventState extends State<CreateEvent>
                                   var gif = await GiphyPicker.pickGif(
                                       context: context,
                                       apiKey: Constants
-                                          .appSettings.giphyTestKey![0]);
+                                          .appSettings.giphyKey![0]);
                                   if (gif != null) {
                                     setState(() => _gif = gif);
                                   }
@@ -193,8 +193,8 @@ class CreateEventState extends State<CreateEvent>
                                       maxLength: 25,
                                       // The validator receives the text that the user has entered.
                                       validator: (value) {
-                                        if (value == null || value.isEmpty || value.length > 15) {
-                                          return 'Event name is empty or is too long.';
+                                        if (value == null || value.isEmpty) {
+                                          return 'Event name is empty.';
                                         }
                                         return null;
                                       },

@@ -7,7 +7,6 @@ import 'package:squat/widgets/button_widget.dart';
 import 'package:squat/widgets/numbers_widget.dart';
 import 'package:squat/widgets/profile_widget.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:squat/pages/Home.dart';
 import '../models/user.dart';
 import '../widgets/header.dart';
 
@@ -29,11 +28,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   void initState() {
-    squattersList?.forEach((element) {
-      print(element.displayName);
-      print(element.squatCount);
-    });
-
     var topSquatters = squattersList!.take(min + random.nextInt(max - min)).toList();
 
     if(!topSquatters!.contains(widget.user)) topSquatters.add(widget.user);
@@ -106,7 +100,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 fontSize: 30,
                 color: Colors.teal,
               )),
-              primaryXAxis: CategoryAxis(),
+              primaryXAxis: CategoryAxis(borderColor: Colors.teal),
               primaryYAxis: NumericAxis(minimum: 0, maximum: 40, interval: 10),
               tooltipBehavior: _tooltip,
               series: <ChartSeries<_SquattersChartData, String>>[

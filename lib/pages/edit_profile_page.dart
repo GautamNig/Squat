@@ -1,14 +1,7 @@
-import 'dart:io';
-
-import 'package:animated_theme_switcher/animated_theme_switcher.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 import 'package:squat/models/user.dart';
-import 'package:squat/utils/user_preferences.dart';
-import 'package:squat/widgets/button_widget.dart';
 import 'package:squat/widgets/profile_widget.dart';
 import 'package:squat/widgets/textfield_widget.dart';
-
 import '../widgets/header.dart';
 
 class EditProfilePage extends StatefulWidget {
