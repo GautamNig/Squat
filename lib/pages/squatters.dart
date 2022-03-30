@@ -1,5 +1,6 @@
 import 'package:animations/animations.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flag/flag.dart';
 import 'package:flag/flag_widget.dart';
 import 'package:flutter/cupertino.dart';
@@ -60,7 +61,12 @@ class _SquatsState extends State<Squaters> {
           children: [
             ListView(
               children: squattersList!
-                  .map((e) => UserWidget(user: e)).toList(),
+                  .map((e) => Column(
+                    children: [
+                      UserWidget(user: e),
+                      const Divider(),
+                    ],
+                  )).toList(),
             ),
             Constants.createAttributionAlignWidget('Sachin @Lottie Files'),
           ],
@@ -84,116 +90,41 @@ class UserWidget extends StatefulWidget {
 class _UserWidgetState extends State<UserWidget> {
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        final route = SharedAxisPageRoute(page: ProfilePage(user: widget.user), transitionType:
-        SharedAxisTransitionType.scaled, duration: 1.5);
-        await Navigator.of(context).push(route);
-      },
-      child: Card(
-        color: Constants.appColor,
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
+    return  ListTile(
+      title: Text(widget.user.username, style: const TextStyle(
+          color: Constants.appColor),),
+      leading: CircleAvatar(
+        backgroundImage: CachedNetworkImageProvider(
+            widget.user.photoUrl
         ),
-        child: Wrap(
+      ),
+      subtitle: Text('Squats: ${widget.user.squatCount.toString()}'),
+      trailing: Padding(
+        padding: const EdgeInsets.only(right: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Container(
-              height: 98,
-              width: MediaQuery.of(context).size.width,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(4),
-                  topRight: Radius.circular(4),
-                ),
-              ),
-              margin: const EdgeInsets.only(left: 3),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Expanded(child: Constants.getAutoSizeText(widget.user.username)),
-                              widget.user.amountDonated > 0
-                                  ? Container(
-                                      height: 80,
-                                      width: 60,
-                                      child: Lottie.asset('assets/json/dollar.json'))
-                                  : Container(
-                                      height: 80,
-                                      width: 60,
-                                    ),
-                            ],
-                          ),),
-                        Expanded(child: Container(
-                          width: MediaQuery.of(context).size.width/5,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              // const Padding(
-                              //   padding:  EdgeInsets.only(right: 8.0),
-                              //   child: Icon(Icons.accessibility_sharp),
-                              // ),
-                              Card(
-                                  shape: BeveledRectangleBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(10.0),
-                                  ),
-                                  color: Constants.appColor,
-                                  child: Container(
-                                    height: 40,
-                                    width: 60,
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Center(child: Text(NumberFormat.compact().format(widget.user.squatCount),
-                                          style: const TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.white,
-                                          fontWeight:
-                                          FontWeight
-                                              .bold),),),
-                                        const Text(
-                                          'SQUATS',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 7),
-                                        )
-                                      ],
-                                    ),),
-                              ),
-                            ],
-                          ),
-                        )),
-                        Expanded(child: Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Flag.fromString(
-                            widget.user.isoCountryCode,
-                            height: 50,
-                            width: 50,
-                            replacement:
-                            Container(),
-                          ),
-                        ))
-                      ],
-                    ),
-                    Expanded(child: Constants.getAutoSizeText('${widget.user.locality}, ${widget.user.country}',
-                    maxLines: 4),)
-                  ],
-                ),
+            Expanded(
+              child: Flag.fromString(
+                widget.user.isoCountryCode,
+                height: 30,
+                width: 30,
+                replacement:
+                Container(),
               ),
             ),
+            Text('${widget.user.locality}, ${widget.user.country}',
+            style: const TextStyle(
+                fontSize: 11,
+                fontStyle: FontStyle.italic, overflow: TextOverflow.ellipsis,
+                color: Constants.appColor),)
           ],
         ),
       ),
+      onTap: () {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => ProfilePage(user: widget.user)));
+      },
     );
   }
 }

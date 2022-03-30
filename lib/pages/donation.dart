@@ -37,7 +37,6 @@ class _DonationState extends State<Donation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Constants.appColor,
         title: const Center(
@@ -120,7 +119,7 @@ class _DonationState extends State<Donation> {
                   ],
                 ),
               ),
-              Constants.createAttributionAlignWidget('Tam Doan @Lottiefiles.com')
+              Constants.createAttributionAlignWidget('Tam Doan @Lottiefiles.com', alignmentGeometry: Alignment.topLeft)
             ],
           ),
         ],

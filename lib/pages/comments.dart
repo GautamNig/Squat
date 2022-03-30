@@ -98,7 +98,7 @@ class CommentsState extends State<Comments> {
         "commentId": commentId,
         "username": currentUser?.username,
         "userId": currentUser?.id,
-        "avatarUrl": currentUser?.photoUrl,
+        "photoUrl": currentUser?.photoUrl,
         "comment": commentTextEditingController.text,
         "giphyUrl": _gif == null ? '' : _gif?.images.original?.url,
         "timestamp": DateTime.now(),
@@ -144,9 +144,7 @@ class CommentsState extends State<Comments> {
             ),
             Align(
                 alignment: Alignment.bottomRight,
-                child: Image.asset(
-                    'assets/images/poweredbygiphy.png'
-                )),
+                child: Image.asset('assets/images/poweredbygiphy.png')),
           ],
         ),
         centerTitle: true,
@@ -189,17 +187,17 @@ class CommentsState extends State<Comments> {
               cursorColor: Constants.appColor,
               maxLines: 2,
               keyboardType: TextInputType.multiline,
-              decoration:
-                  InputDecoration(hintText: 'Share your comment',
-                        enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(width: 1, color: Colors.black),
-                        borderRadius: BorderRadius.circular(10),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(width: 1, color: Colors.teal),
-                        borderRadius: BorderRadius.circular(10),
-                        )),
+              decoration: InputDecoration(
+                  hintText: 'Share your comment',
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(width: 1, color: Colors.black),
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(width: 1, color: Colors.teal),
+                    borderRadius: BorderRadius.circular(10),
+                  )),
+            ),
             trailing: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
               IconButton(
                   icon: Icon(
@@ -233,7 +231,7 @@ class Comment extends StatelessWidget {
   final String commentId;
   final String username;
   final String userId;
-  final String avatarUrl;
+  final String photoUrl;
   final String comment;
   final Timestamp timestamp;
   final List<String> commentLikedByIds;
@@ -243,7 +241,7 @@ class Comment extends StatelessWidget {
     required this.commentId,
     required this.username,
     required this.userId,
-    required this.avatarUrl,
+    required this.photoUrl,
     required this.comment,
     required this.timestamp,
     required this.commentLikedByIds,
@@ -255,7 +253,7 @@ class Comment extends StatelessWidget {
       commentId: doc['commentId'],
       username: doc['username'],
       userId: doc['userId'],
-      avatarUrl: doc['avatarUrl'],
+      photoUrl: doc['photoUrl'],
       comment: doc['comment'],
       timestamp: doc['timestamp'],
       commentLikedByIds:
@@ -281,42 +279,45 @@ class Comment extends StatelessWidget {
                   ],
                 ),
                 leading: CircleAvatar(
-                  backgroundImage: CachedNetworkImageProvider(avatarUrl),
+                  backgroundImage: CachedNetworkImageProvider(photoUrl),
                 ),
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          username,
-                          style: const TextStyle(
-                              fontStyle: FontStyle.italic, overflow: TextOverflow.ellipsis,
-                              color: Constants.appColor),
-                        ),
-                        const Text(
-                          ': ',
-                          style: TextStyle(
-                              fontStyle: FontStyle.italic,
-                              color: Constants.appColor),
-                        ),
-                        Text(timeago.format(timestamp.toDate()),
-                            style: const TextStyle(
-                              fontSize: 12, overflow: TextOverflow.ellipsis,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey,
-                            )),
-                      ],
+                    Expanded(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '$username:',
+                              style: const TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  overflow: TextOverflow.ellipsis,
+                                  color: Constants.appColor),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(timeago.format(timestamp.toDate()),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  overflow: TextOverflow.ellipsis,
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.grey,
+                                )),
+                          ),
+                        ],
+                      ),
                     ),
-
                     Badge(
                       badgeColor: Constants.appColor,
                       showBadge: commentLikedByIds.isEmpty ? false : true,
                       position: BadgePosition.bottomEnd(bottom: 15, end: -10),
                       animationDuration: const Duration(milliseconds: 300),
                       animationType: BadgeAnimationType.slide,
-                      badgeContent: Text(NumberFormat.compact().format(commentLikedByIds.length),
+                      badgeContent: Text(
+                          NumberFormat.compact()
+                              .format(commentLikedByIds.length),
                           style: const TextStyle(color: Colors.white)),
                       child: InkWell(
                         onTap: () async {
@@ -327,7 +328,7 @@ class Comment extends StatelessWidget {
                             commentLikedByIds.remove(currentUser.id);
                             await commentsRef.doc(commentId).update({
                               'commentLikedByIds':
-                              List<dynamic>.from(commentLikedByIds)
+                                  List<dynamic>.from(commentLikedByIds)
                             });
                           } else {
                             // setState(() {
@@ -336,7 +337,7 @@ class Comment extends StatelessWidget {
                             commentLikedByIds.add(currentUser.id);
                             await commentsRef.doc(commentId).update({
                               'commentLikedByIds':
-                              List<dynamic>.from(commentLikedByIds)
+                                  List<dynamic>.from(commentLikedByIds)
                             });
                           }
                         },
@@ -355,43 +356,46 @@ class Comment extends StatelessWidget {
                 ListTile(
                   subtitle: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        comment,
-                        style: const TextStyle(
-                          color: Colors.black,
-                        ),
-                      ),
+                      if (comment.isNotEmpty)
+                        Expanded(
+                            child: Text(comment,
+                                style: const TextStyle(color: Colors.black))),
                     ],
                   ),
                   leading: CircleAvatar(
-                    backgroundImage: CachedNetworkImageProvider(avatarUrl),
+                    backgroundImage: CachedNetworkImageProvider(photoUrl),
                   ),
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            username,
-                            style: const TextStyle(
-                                fontStyle: FontStyle.italic, overflow: TextOverflow.ellipsis,
-                                color: Constants.appColor),
-                          ),
-                          const Text(
-                            ': ',
-                            style: TextStyle(
-                                fontStyle: FontStyle.italic,
-                                color: Constants.appColor),
-                          ),
-                          Text(timeago.format(timestamp.toDate(),),
-                              style: const TextStyle(
-                                fontSize: 12, overflow: TextOverflow.ellipsis,
-                                fontStyle: FontStyle.italic,
-                                color: Colors.grey,
-                              )),
-                        ],
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                username,
+                                style: const TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    overflow: TextOverflow.ellipsis,
+                                    color: Constants.appColor),
+                              ),
+                            ),
+                            Expanded(
+                                child: Text(
+                                    timeago.format(
+                                      timestamp.toDate(),
+                                    ),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      overflow: TextOverflow.ellipsis,
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.grey,
+                                    ))),
+                          ],
+                        ),
                       ),
                       Badge(
                         badgeColor: Constants.appColor,
@@ -410,7 +414,7 @@ class Comment extends StatelessWidget {
                               commentLikedByIds.remove(currentUser.id);
                               await commentsRef.doc(commentId).update({
                                 'commentLikedByIds':
-                                List<dynamic>.from(commentLikedByIds)
+                                    List<dynamic>.from(commentLikedByIds)
                               });
                             } else {
                               // setState(() {
@@ -419,7 +423,7 @@ class Comment extends StatelessWidget {
                               commentLikedByIds.add(currentUser.id);
                               await commentsRef.doc(commentId).update({
                                 'commentLikedByIds':
-                                List<dynamic>.from(commentLikedByIds)
+                                    List<dynamic>.from(commentLikedByIds)
                               });
                             }
                           },
