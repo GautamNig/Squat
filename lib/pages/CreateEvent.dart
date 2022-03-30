@@ -131,7 +131,7 @@ class CreateEventState extends State<CreateEvent>
                                   var gif = await GiphyPicker.pickGif(
                                       context: context,
                                       apiKey: Constants
-                                          .appSettings.giphyKey![0]);
+                                          .appSettings!.giphyKey![0]);
                                   if (gif != null) {
                                     setState(() => _gif = gif);
                                   }

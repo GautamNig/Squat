@@ -8,9 +8,11 @@ import '../pages/Home.dart';
 
 class Constants {
   static const Color appColor = Colors.teal;
-  static const String nyTimesBaseUri = 'https://api.nytimes.com/svc/search/v2/articlesearch.json';
+  static const String nyTimesArticleSearchBaseUri = 'https://api.nytimes.com/svc/search/v2/articlesearch.json';
+  static const String nyTimesWorldLatestBaseUri = 'https://api.nytimes.com/svc/topstories/v2/world.json';
   static const String nyTimesBaseUriForImages = 'https://www.nytimes.com/';
-  static late AppSettings appSettings;
+
+  static AppSettings? appSettings;
   static const TextStyle appHeaderTextSTyle = TextStyle(
       fontFamily: "Signatra",
       fontSize: 30,

@@ -31,6 +31,8 @@ import 'package:audioplayers/audioplayers.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'news_latest.dart';
+
 final GoogleSignIn googleSignIn = GoogleSignIn();
 final usersRef = FirebaseFirestore.instance.collection('users');
 final eventsRef = FirebaseFirestore.instance.collection('events');
@@ -39,7 +41,7 @@ final appSettingsRef = FirebaseFirestore.instance.collection('settings');
 final random = Random();
 late User currentUser;
 List<User>? squattersList = [];
-NYTimesArticleSearch? nYTimesArticleSearchResult;
+
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -133,7 +135,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       Configuration
           .fromJson(value.docs.first.data())
           .appSettings!;
-      _timerDuration = int.parse(Constants.appSettings.squatWaitTime![0]);
+      _timerDuration = int.parse(Constants.appSettings!.squatWaitTime![0]);
       if (_timerDuration == 0) {
         _timerDuration = min + random.nextInt(max - min);
       }
@@ -564,7 +566,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                           Squaters(),
                           Comments(userId: currentUser.id),
                           Events(),
-                          const NewsPage(),
+                          const NewsLatest(),
                           const Donation(),
                           // ActivityFeed(),
                           // Upload(currentUser:currentUser),

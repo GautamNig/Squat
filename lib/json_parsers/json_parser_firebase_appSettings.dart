@@ -18,6 +18,7 @@ class AppSettings {
   List<String>? snackBarTimeDuration;
   List<String>? nyTimesApiSearchTerms;
   List<String>? generalMessages;
+  List<String>? newsApi;
 
   AppSettings({this.giphyKey,
     this.nyTimesApiKey,
@@ -25,7 +26,8 @@ class AppSettings {
     this.graphCountryCount,
     this.snackBarTimeDuration,
     this.nyTimesApiSearchTerms,
-    this.generalMessages
+    this.generalMessages,
+    this.newsApi
   });
 
   AppSettings.fromJson(Map<String, dynamic> json) {
@@ -36,5 +38,6 @@ class AppSettings {
     snackBarTimeDuration = json['snackBarTimeDuration'].cast<String>();
     nyTimesApiSearchTerms = json['nyTimesApiSearchTerms'].cast<String>();
     generalMessages = json['generalMessages'].cast<String>();
+    generalMessages = json['newsApi'].cast<String>();
   }
 }

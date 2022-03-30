@@ -186,7 +186,7 @@ class _UserWidgetState extends State<UserWidget> {
                       ],
                     ),
                     Expanded(child: Constants.getAutoSizeText('${widget.user.locality}, ${widget.user.country}',
-                    maxLines: 1),)
+                    maxLines: 4),)
                   ],
                 ),
               ),

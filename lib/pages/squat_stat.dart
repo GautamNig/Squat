@@ -28,8 +28,8 @@ class _SquatStatState extends State<SquatStat> {
 
           squatDataList.sort((a, b) => b.squaters.compareTo(a.squaters));
 
-          if (squatDataList.length > int.parse(Constants.appSettings.graphCountryCount![0])) {
-            squatDataList = squatDataList.take(int.parse(Constants.appSettings.graphCountryCount![0])).toList();
+          if (squatDataList.length > int.parse(Constants.appSettings!.graphCountryCount![0])) {
+            squatDataList = squatDataList.take(int.parse(Constants.appSettings!.graphCountryCount![0])).toList();
           }
 
           return Scaffold(
