@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:squat/widgets/header.dart';
 import '../helpers/Constants.dart';
+import 'Home.dart';
 
 class CreateAccount extends StatefulWidget {
   @override

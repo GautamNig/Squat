@@ -1,10 +1,6 @@
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:squat/json_parsers/json_parser_firebase_appSettings.dart';
-
-import '../json_parsers/json_parser_nytimes_articlesearch.dart';
-import '../pages/Home.dart';
 
 class Constants {
   static const Color appColor = Colors.teal;
@@ -32,12 +28,12 @@ class Constants {
   }
 
   static Align createAttributionAlignWidget(
-      String text, {AlignmentGeometry alignmentGeometry = Alignment.bottomRight}) {
+      String text, {AlignmentGeometry alignmentGeometry = Alignment.bottomRight, Color color = Colors.black}) {
     return Align(
       alignment: alignmentGeometry,
       child: Text(
         text,
-        style: const TextStyle(fontSize: 9),
+        style: TextStyle(fontSize: 9, color: color),
       ),
     );
   }
@@ -58,10 +54,10 @@ class Constants {
         contentPadding: const EdgeInsets.all(16),);
 
   static AutoSizeText getAutoSizeText(String text, { Color color = Constants.appColor,
-    double fontSize = 20, int maxLines = 4, FontWeight fontWeight = FontWeight.normal}) =>
+    double fontSize = 20, int maxLines = 4, FontWeight fontWeight = FontWeight.normal, fontStyle = FontStyle.italic}) =>
       AutoSizeText(
         text,
-        style: TextStyle(fontSize: fontSize, color: color, fontStyle: FontStyle.italic, fontWeight: fontWeight),
+        style: TextStyle(fontSize: fontSize, color: color, fontStyle: fontStyle, fontWeight: fontWeight),
         maxLines: maxLines,
         overflow: TextOverflow.ellipsis,
       );

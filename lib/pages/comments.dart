@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -29,6 +31,7 @@ class CommentsState extends State<Comments> {
   final String userId;
   GiphyGif? _gif;
   List<DocumentSnapshot> documents = [];
+  ScrollController _controller = ScrollController();
 
   // String searchText = '';
 
@@ -86,6 +89,7 @@ class CommentsState extends State<Comments> {
             comments.add(Comment.fromDocument(doc));
           });
           return ListView(
+            controller: _controller,
             children: comments,
           );
         });
@@ -111,6 +115,11 @@ class CommentsState extends State<Comments> {
           _gif = null;
         });
         FocusManager.instance.primaryFocus?.unfocus();
+
+        Timer(
+            const Duration(milliseconds: 300),
+                () => _controller
+                .jumpTo(_controller.position.maxScrollExtent));
       });
     }
   }
@@ -183,6 +192,12 @@ class CommentsState extends State<Comments> {
           ),
           ListTile(
             title: TextFormField(
+              onTap: () {
+                Timer(
+                    const Duration(milliseconds: 300),
+                    () => _controller
+                        .jumpTo(_controller.position.maxScrollExtent));
+              },
               controller: commentTextEditingController,
               cursorColor: Constants.appColor,
               maxLines: 2,
@@ -281,75 +296,79 @@ class Comment extends StatelessWidget {
                 leading: CircleAvatar(
                   backgroundImage: CachedNetworkImageProvider(photoUrl),
                 ),
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '$username:',
-                              style: const TextStyle(
-                                  fontStyle: FontStyle.italic,
-                                  overflow: TextOverflow.ellipsis,
-                                  color: Constants.appColor),
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(timeago.format(timestamp.toDate()),
+                title: Padding(
+                  padding: const EdgeInsets.only(top: 14.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '$username:',
                                 style: const TextStyle(
-                                  fontSize: 12,
-                                  overflow: TextOverflow.ellipsis,
-                                  fontStyle: FontStyle.italic,
-                                  color: Colors.grey,
-                                )),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Badge(
-                      badgeColor: Constants.appColor,
-                      showBadge: commentLikedByIds.isEmpty ? false : true,
-                      position: BadgePosition.bottomEnd(bottom: 15, end: -10),
-                      animationDuration: const Duration(milliseconds: 300),
-                      animationType: BadgeAnimationType.slide,
-                      badgeContent: Text(
-                          NumberFormat.compact()
-                              .format(commentLikedByIds.length),
-                          style: const TextStyle(color: Colors.white)),
-                      child: InkWell(
-                        onTap: () async {
-                          if (commentLikedByIds.contains(currentUser.id)) {
-                            // setState(() {
-                            //   thumbsUpColor = Colors.white;
-                            // });
-                            commentLikedByIds.remove(currentUser.id);
-                            await commentsRef.doc(commentId).update({
-                              'commentLikedByIds':
-                                  List<dynamic>.from(commentLikedByIds)
-                            });
-                          } else {
-                            // setState(() {
-                            //   thumbsUpColor = Colors.pink;
-                            // });
-                            commentLikedByIds.add(currentUser.id);
-                            await commentsRef.doc(commentId).update({
-                              'commentLikedByIds':
-                                  List<dynamic>.from(commentLikedByIds)
-                            });
-                          }
-                        },
-                        child: Icon(
-                          Icons.thumb_up_sharp,
-                          color: commentLikedByIds.contains(currentUser.id)
-                              ? Constants.appColor
-                              : Colors.grey,
+                                    fontStyle: FontStyle.italic,
+                                    overflow: TextOverflow.ellipsis,
+                                    color: Constants.appColor),
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(timeago.format(timestamp.toDate()),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    overflow: TextOverflow.ellipsis,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.grey,
+                                  )),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
+                      Badge(
+                        badgeColor: Constants.appColor,
+                        showBadge: commentLikedByIds.isEmpty ? false : true,
+                        position: BadgePosition.bottomEnd(bottom: 15, end: -10),
+                        animationDuration: const Duration(milliseconds: 300),
+                        animationType: BadgeAnimationType.slide,
+                        badgeContent: Text(
+                            NumberFormat.compact()
+                                .format(commentLikedByIds.length),
+                            style: const TextStyle(color: Colors.white)),
+                        child: InkWell(
+                          onTap: () async {
+                            if (commentLikedByIds.contains(currentUser.id)) {
+                              // setState(() {
+                              //   thumbsUpColor = Colors.white;
+                              // });
+                              commentLikedByIds.remove(currentUser.id);
+                              await commentsRef.doc(commentId).update({
+                                'commentLikedByIds':
+                                    List<dynamic>.from(commentLikedByIds)
+                              });
+                            } else {
+                              // setState(() {
+                              //   thumbsUpColor = Colors.pink;
+                              // });
+                              commentLikedByIds.add(currentUser.id);
+                              await commentsRef.doc(commentId).update({
+                                'commentLikedByIds':
+                                    List<dynamic>.from(commentLikedByIds)
+                              });
+                            }
+                          },
+                          child: Icon(
+                            Icons.thumb_up_sharp,
+                            color: commentLikedByIds.contains(currentUser.id)
+                                ? Constants.appColor
+                                : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               )
             : Column(mainAxisSize: MainAxisSize.min, children: [
@@ -369,6 +388,7 @@ class Comment extends StatelessWidget {
                   ),
                   title: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: Row(

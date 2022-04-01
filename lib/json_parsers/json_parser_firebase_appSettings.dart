@@ -12,6 +12,7 @@ class Configuration {
 
 class AppSettings {
   List<String>? giphyKey;
+  List<String>? developerMessages;
   List<String>? nyTimesApiKey;
   List<String>? squatWaitTime;
   List<String>? graphCountryCount;
@@ -21,6 +22,7 @@ class AppSettings {
   List<String>? newsApi;
 
   AppSettings({this.giphyKey,
+    this.developerMessages,
     this.nyTimesApiKey,
     this.squatWaitTime,
     this.graphCountryCount,
@@ -32,6 +34,7 @@ class AppSettings {
 
   AppSettings.fromJson(Map<String, dynamic> json) {
     giphyKey = json['giphyKey'].cast<String>();
+    developerMessages = json['developerMessages'].cast<String>();
     nyTimesApiKey = json['nyTimesApiKey'].cast<String>();
     squatWaitTime = json['squatWaitTime'].cast<String>();
     graphCountryCount = json['graphCountryCount'].cast<String>();

@@ -128,6 +128,8 @@ class CreateEventState extends State<CreateEvent>
                                   top: 120.0, left: 100.0),
                               child: InkWell(
                                 onTap: () async {
+                                  print(Constants
+                                      .appSettings!.giphyKey![0]);
                                   var gif = await GiphyPicker.pickGif(
                                       context: context,
                                       apiKey: Constants

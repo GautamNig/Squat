@@ -1,16 +1,17 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class ProfileWidget extends StatelessWidget {
   final String imagePath;
-  final bool isEdit;
+  final bool isCurrentUser;
   final VoidCallback onClicked;
 
   const ProfileWidget({
     Key? key,
     required this.imagePath,
-    this.isEdit = false,
+    required this.isCurrentUser,
     required this.onClicked,
   }) : super(key: key);
 
@@ -22,18 +23,18 @@ class ProfileWidget extends StatelessWidget {
       child: Stack(
         children: [
           buildImage(),
-          // Positioned(
-          //   bottom: 0,
-          //   right: 4,
-          //   child: buildEditIcon(color),
-          // ),
+          Positioned(
+            bottom: 0,
+            right: 4,
+            child: isCurrentUser ? buildEditIcon(color) : Container(),
+          ),
         ],
       ),
     );
   }
 
   Widget buildImage() {
-    final image = NetworkImage(imagePath);
+    final image = CachedNetworkImageProvider(imagePath);
 
     return ClipOval(
       child: Material(
@@ -43,25 +44,22 @@ class ProfileWidget extends StatelessWidget {
           fit: BoxFit.cover,
           width: 128,
           height: 128,
-          child: InkWell(onTap: onClicked),
+          child: Container(),
         ),
       ),
     );
   }
 
   Widget buildEditIcon(Color color) => buildCircle(
-        color: Colors.white,
-        all: 3,
-        child: buildCircle(
           color: color,
-          all: 8,
-          child: Icon(
-            isEdit ? Icons.add_a_photo : Icons.edit,
+          all: 0.0,
+          child: IconButton(
+            onPressed: onClicked,
+            icon: const Icon(Icons.delete_forever_rounded, size: 30,),
             color: Colors.white,
-            size: 20,
           ),
-        ),
-      );
+        );
+
 
   Widget buildCircle({
     required Widget child,

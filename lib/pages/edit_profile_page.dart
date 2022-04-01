@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:squat/models/user.dart';
+import 'package:squat/pages/Home.dart';
 import 'package:squat/widgets/profile_widget.dart';
 import 'package:squat/widgets/textfield_widget.dart';
 import '../widgets/header.dart';
@@ -28,7 +29,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               children: [
                 ProfileWidget(
                   imagePath: user.photoUrl,
-                  isEdit: true,
+                  isCurrentUser: currentUser.id == user.id,
                   onClicked: () async {},
                 ),
                 const SizedBox(height: 24),

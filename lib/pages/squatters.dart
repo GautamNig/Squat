@@ -115,7 +115,7 @@ class _UserWidgetState extends State<UserWidget> {
             ),
             Text('${widget.user.locality}, ${widget.user.country}',
             style: const TextStyle(
-                fontSize: 11,
+                fontSize: 13,
                 fontStyle: FontStyle.italic, overflow: TextOverflow.ellipsis,
                 color: Constants.appColor),)
           ],

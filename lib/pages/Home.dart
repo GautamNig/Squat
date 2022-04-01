@@ -86,6 +86,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   int min = 5;
   int max = 100;
 
+  String? snackBarText;
+
   // Usually we dispose the stuff created in init.
   @override
   void dispose() {
@@ -131,6 +133,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
     getLocationAndSetupRive();
     appSettingsRef.get().then((value) {
+      print('Fetch complete...');
       Constants.appSettings =
       Configuration
           .fromJson(value.docs.first.data())
@@ -138,6 +141,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       _timerDuration = int.parse(Constants.appSettings!.squatWaitTime![0]);
       if (_timerDuration == 0) {
         _timerDuration = min + random.nextInt(max - min);
+      }
+
+      snackBarText = Constants.appSettings?.developerMessages?.first;
+      print(snackBarText);
+      if(snackBarText != null &&
+          snackBarText!.isNotEmpty){
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(snackBarText!),
+          backgroundColor: Constants.appColor,));
       }
     });
   }

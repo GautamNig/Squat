@@ -119,7 +119,8 @@ class _DonationState extends State<Donation> {
                   ],
                 ),
               ),
-              Constants.createAttributionAlignWidget('Tam Doan @Lottiefiles.com', alignmentGeometry: Alignment.topLeft)
+              Constants.createAttributionAlignWidget('Tam Doan @Lottiefiles.com',
+                  alignmentGeometry: Alignment.topLeft)
             ],
           ),
         ],

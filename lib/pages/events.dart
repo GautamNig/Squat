@@ -150,6 +150,7 @@ class _EventWidgetState extends State<EventWidget> {
             children: [
               widget.event!.giphyUrl.isNotEmpty
                   ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CachedNetworkImage(
                           imageUrl: widget.event!.giphyUrl,
@@ -170,7 +171,7 @@ class _EventWidgetState extends State<EventWidget> {
                       Text(
                         widget.event!.eventStatus,
                         style: const TextStyle(
-                            color: Colors.red, overflow: TextOverflow.ellipsis,
+                            color: Colors.red,
                             fontSize: 20,
                             fontStyle: FontStyle.italic),
                       )
@@ -203,7 +204,7 @@ class _EventWidgetState extends State<EventWidget> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Constants.getAutoSizeText(widget.event!.eventName, fontWeight: FontWeight.bold),
+                        Constants.getAutoSizeText(widget.event!.eventName, fontStyle: FontStyle.normal),
                         const SizedBox(height: 20,),
                         Stack(
                           children: [
