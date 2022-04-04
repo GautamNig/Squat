@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'helpers/Constants.dart';
-import 'pages/Home.dart';
+import 'pages/home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

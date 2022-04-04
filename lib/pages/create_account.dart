@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:squat/widgets/header.dart';
 import '../helpers/Constants.dart';
-import 'Home.dart';
+import 'home.dart';
 
 class CreateAccount extends StatefulWidget {
   @override
@@ -34,6 +34,7 @@ class _CreateAccountState extends State<CreateAccount> {
   @override
   Widget build(BuildContext parentContext) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       key: _scaffoldKey,
       appBar: header(context,
           titleText: "Set up your profile", removeBackButton: true),

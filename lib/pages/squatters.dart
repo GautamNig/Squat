@@ -13,7 +13,7 @@ import 'package:squat/pages/squat_stat.dart';
 import '../helpers/Constants.dart';
 import '../helpers/shared_axis_page_route.dart';
 import '../models/user.dart';
-import 'Home.dart';
+import 'home.dart';
 
 class Squaters extends StatefulWidget {
   @override
@@ -21,6 +21,7 @@ class Squaters extends StatefulWidget {
 }
 
 class _SquatsState extends State<Squaters> {
+  String searchText = '';
 
   @override
   void initState() {
@@ -40,37 +41,79 @@ class _SquatsState extends State<Squaters> {
           centerTitle: true,
           backgroundColor: Theme.of(context).colorScheme.secondary,
           actions: [
-          OpenContainer(
-            openColor: Colors.teal,
-            closedColor: Colors.teal,
-            transitionType: ContainerTransitionType.fade,
-            transitionDuration: const Duration(milliseconds: 1100),
-            openBuilder: (_, closeContainer) {
-              return const SquatStat();
-            },
-            closedBuilder: (_, openContainer) {
-              return IconButton(
-                icon: const FaIcon(FontAwesomeIcons.chartPie, color: Colors.white,),
-                onPressed: openContainer,
-              );
-            },
-          ),
+            OpenContainer(
+              openColor: Colors.teal,
+              closedColor: Colors.teal,
+              transitionType: ContainerTransitionType.fade,
+              transitionDuration: const Duration(milliseconds: 1100),
+              openBuilder: (_, closeContainer) {
+                return const SquatStat();
+              },
+              closedBuilder: (_, openContainer) {
+                return IconButton(
+                  icon: const FaIcon(
+                    FontAwesomeIcons.chartPie,
+                    color: Colors.white,
+                  ),
+                  onPressed: openContainer,
+                );
+              },
+            ),
           ],
         ),
         body: Stack(
           children: [
-            ListView(
-              children: squattersList!
-                  .map((e) => Column(
-                    children: [
-                      UserWidget(user: e),
-                      const Divider(),
-                    ],
-                  )).toList(),
+            Column(
+              children: [
+                buildSearchField(),
+                Expanded(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: searchText.isNotEmpty
+                        ? squattersList!
+                            .where((element) => element.displayName
+                                .toLowerCase()
+                                .contains(searchText.toLowerCase()))
+                            .map((e) => Column(
+                                  children: [
+                                    UserWidget(user: e),
+                                    const Divider(),
+                                  ],
+                                ))
+                            .toList()
+                        : squattersList!
+                            .map((e) => Column(
+                                  children: [
+                                    UserWidget(user: e),
+                                    const Divider(),
+                                  ],
+                                ))
+                            .toList(),
+                  ),
+                ),
+              ],
             ),
             Constants.createAttributionAlignWidget('Sachin @Lottie Files'),
           ],
         ));
+  }
+
+  TextFormField buildSearchField() {
+    return TextFormField(
+      onChanged: (value) {
+        setState(() {
+          searchText = value;
+        });
+      },
+      decoration: const InputDecoration(
+        hintText: "Search for a user...",
+        filled: true,
+        prefixIcon: Icon(
+          Icons.account_circle_rounded,
+          size: 28.0,
+        ),
+      ),
+    );
   }
 }
 
@@ -83,20 +126,20 @@ class UserWidget extends StatefulWidget {
 
   @override
   _UserWidgetState createState() => _UserWidgetState(
-    // event: this.event,
-  );
+      // event: this.event,
+      );
 }
 
 class _UserWidgetState extends State<UserWidget> {
   @override
   Widget build(BuildContext context) {
-    return  ListTile(
-      title: Text(widget.user.username, style: const TextStyle(
-          color: Constants.appColor),),
+    return ListTile(
+      title: Text(
+        widget.user.username,
+        style: const TextStyle(color: Constants.appColor),
+      ),
       leading: CircleAvatar(
-        backgroundImage: CachedNetworkImageProvider(
-            widget.user.photoUrl
-        ),
+        backgroundImage: CachedNetworkImageProvider(widget.user.photoUrl),
       ),
       subtitle: Text('Squats: ${widget.user.squatCount.toString()}'),
       trailing: Padding(
@@ -105,25 +148,33 @@ class _UserWidgetState extends State<UserWidget> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
-              child: Flag.fromString(
-                widget.user.isoCountryCode,
-                height: 30,
-                width: 30,
-                replacement:
-                Container(),
-              ),
+              child: widget.user.isoCountryCode.isNotEmpty
+                  ? Flag.fromString(
+                      widget.user.isoCountryCode,
+                      height: 30,
+                      width: 30,
+                      replacement: Container(),
+                    )
+                  : const SizedBox(),
             ),
-            Text('${widget.user.locality}, ${widget.user.country}',
-            style: const TextStyle(
-                fontSize: 13,
-                fontStyle: FontStyle.italic, overflow: TextOverflow.ellipsis,
-                color: Constants.appColor),)
+            (widget.user.locality.isEmpty || widget.user.country.isEmpty)
+                ? const SizedBox()
+                : Text(
+                    '${widget.user.locality}, ${widget.user.country}',
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic,
+                        overflow: TextOverflow.ellipsis,
+                        color: Constants.appColor),
+                  )
           ],
         ),
       ),
       onTap: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => ProfilePage(user: widget.user)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ProfilePage(user: widget.user)));
       },
     );
   }

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:squat/pages/Home.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:squat/pages/home.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:squat/pages/news_latest.dart';
 import '../helpers/Constants.dart';
 import '../json_parsers/json_parser_nytimes_articlesearch.dart';
+import '../json_parsers/json_parser_nytimes_latest_world_news.dart';
 import '../widgets/header.dart';
 import '../widgets/progress.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -24,6 +27,7 @@ class _NewsPageState extends State<NewsPage> {
   void initState() {
     super.initState();
     fetchNyTimesData();
+    fetchNyTimesWorldLatestData();
   }
 
   @override
@@ -56,7 +60,32 @@ class _NewsPageState extends State<NewsPage> {
           ),
         ) :
         Scaffold(
-          appBar: header(context, titleText: 'More Articles'),
+          appBar: AppBar(
+            title: const Text(
+              'News Articles',
+              style: Constants.appHeaderTextSTyle,
+              overflow: TextOverflow.ellipsis,
+            ),
+            centerTitle: true,
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            actions: [
+              IconButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => const NewsLatest()),
+                    );
+                  },
+                  icon: const Align(
+                      alignment: Alignment.topRight,
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(0, 8.0, 0, 0),
+                        child: FaIcon(
+                          FontAwesomeIcons.solidNewspaper,
+                          color: Colors.white,
+                        ),
+                      ))),
+            ],
+          ),
           body: Stack(
             children: [
               RefreshIndicator(
@@ -99,8 +128,6 @@ class _NewsPageState extends State<NewsPage> {
     var uriToFetch =
         '${Constants.nyTimesArticleSearchBaseUri}?q=${Constants.appSettings!.nyTimesApiSearchTerms![random.nextInt(Constants.appSettings!.nyTimesApiSearchTerms!.length)]}&api-key=${Constants.appSettings!.nyTimesApiKey?.first}';
 
-    print(uriToFetch);
-
       http.get(Uri.parse(uriToFetch)).then((value) {
         setState(() {
           nYTimesArticleSearchResult =
@@ -113,6 +140,24 @@ class _NewsPageState extends State<NewsPage> {
               ?.sort((a, b) => b.pubDate!.compareTo(a.pubDate!));
         }
       });
+  }
+
+  void fetchNyTimesWorldLatestData() {
+    var uriToFetch =
+        '${Constants.nyTimesWorldLatestBaseUri}?&api-key=${Constants.appSettings!.nyTimesApiKey?.first}';
+
+    http.get(Uri.parse(uriToFetch)).then((value) {
+      if (mounted) {
+        setState(() {
+          Constants.nYTimesLatestWorldNews =
+              NYTimesLatestWorldNews.fromJson(jsonDecode(value.body));
+          if (Constants.nYTimesLatestWorldNews!.results != null) {
+            Constants.nYTimesLatestWorldNews!.results
+                ?.sort((a, b) => b.publishedDate!.compareTo(a.publishedDate!));
+          }
+        });
+      }
+    });
   }
 }
 

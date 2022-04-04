@@ -4,7 +4,7 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import '../helpers/Constants.dart';
 import '../models/user.dart';
 import '../widgets/header.dart';
-import 'Home.dart';
+import 'home.dart';
 
 class SquatStat extends StatefulWidget {
   const SquatStat({Key? key}) : super(key: key);
@@ -33,15 +33,8 @@ class _SquatStatState extends State<SquatStat> {
           }
 
           return Scaffold(
-            appBar: header(context, titleText: "Squatters by country"),
+            appBar: header(context, titleText: "Countries with most squatters"),
             body: SfCircularChart(
-                // title: ChartTitle(
-                //     text: 'Squatters by Country',
-                //     textStyle: const TextStyle(
-                //         fontFamily: "Signatra",
-                //         fontSize: 30,
-                //         color: Constants.appColor
-                //     )),
                 legend: Legend(isVisible: true),
                 // Initialize category axis
                 series: <CircularSeries>[

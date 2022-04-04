@@ -13,8 +13,8 @@ import 'package:squat/widgets/progress.dart';
 import '../helpers/Constants.dart';
 import '../models/event.dart';
 import '../widgets/event_detail.dart';
-import 'CreateEvent.dart';
-import 'Home.dart';
+import 'create_event.dart';
+import 'home.dart';
 import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import '../helpers/shared_axis_page_route.dart';
 
@@ -148,12 +148,12 @@ class _EventWidgetState extends State<EventWidget> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              widget.event!.giphyUrl.isNotEmpty
+              widget.event.giphyUrl.isNotEmpty
                   ? Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       CachedNetworkImage(
-                          imageUrl: widget.event!.giphyUrl,
+                          imageUrl: widget.event.giphyUrl,
                           imageBuilder: (context, imageProvider) => Container(
                             width: 110,
                             height: 110.0,
@@ -169,7 +169,7 @@ class _EventWidgetState extends State<EventWidget> {
                               const Icon(Icons.error),
                         ),
                       Text(
-                        widget.event!.eventStatus,
+                        widget.event.eventStatus,
                         style: const TextStyle(
                             color: Colors.red,
                             fontSize: 20,
@@ -189,7 +189,7 @@ class _EventWidgetState extends State<EventWidget> {
                                 fit: BoxFit.cover,
                               ))),
                       Text(
-                        widget.event!.eventStatus,
+                        widget.event.eventStatus,
                         style: const TextStyle(
                             color: Colors.red, overflow: TextOverflow.ellipsis,
                             fontSize: 20,
@@ -204,23 +204,23 @@ class _EventWidgetState extends State<EventWidget> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Constants.getAutoSizeText(widget.event!.eventName, fontStyle: FontStyle.normal),
+                        Constants.getAutoSizeText(widget.event.eventName, fontStyle: FontStyle.normal),
                         const SizedBox(height: 20,),
                         Stack(
                           children: [
                             Visibility(
-                              visible: widget.event!.eventStatus == '',
+                              visible: widget.event.eventStatus == '',
                               child: Padding(padding: const EdgeInsets.only(left: 4, right: 4), child: CountdownTimer(
                                 endTime:
-                                widget.event!.eventOccurrenceDateTime.millisecondsSinceEpoch,
+                                widget.event.eventOccurrenceDateTime.millisecondsSinceEpoch,
                                 onEnd: () {
-                                  if (widget.event!.eventStatus == 'EXPIRED' ||
-                                      widget.event!.eventStatus == 'LIVE') return;
+                                  if (widget.event.eventStatus == 'EXPIRED' ||
+                                      widget.event.eventStatus == 'LIVE') return;
 
                                   audioCache.play('bell.mp3');
 
                                   eventsRef
-                                      .doc(widget.event!.eventId)
+                                      .doc(widget.event.eventId)
                                       .update({'eventStatus': 'LIVE'});
                                 },
                                 widgetBuilder: (_, CurrentRemainingTime? time) {
@@ -235,9 +235,9 @@ class _EventWidgetState extends State<EventWidget> {
                               ),),
                             ),
                             Visibility(
-                              visible: widget.event!.eventStatus == 'LIVE',
+                              visible: widget.event.eventStatus == 'LIVE',
                               child: Padding(padding: const EdgeInsets.only(left: 4, right: 4), child: CountdownTimer(
-                                endTime: widget.event!.eventEndDateTime.millisecondsSinceEpoch,
+                                endTime: widget.event.eventEndDateTime.millisecondsSinceEpoch,
                                 widgetBuilder: (_, CurrentRemainingTime? time) {
                                   if (time == null) {
                                     return Container();
@@ -248,9 +248,9 @@ class _EventWidgetState extends State<EventWidget> {
                                   );
                                 },
                                 onEnd: () {
-                                  if (widget.event!.eventStatus == 'EXPIRED') return;
+                                  if (widget.event.eventStatus == 'EXPIRED') return;
                                   eventsRef
-                                      .doc(widget.event!.eventId)
+                                      .doc(widget.event.eventId)
                                       .update({'eventStatus': 'EXPIRED'});
                                 },
                               ),
@@ -267,31 +267,31 @@ class _EventWidgetState extends State<EventWidget> {
               Padding(padding: const EdgeInsets.only(right: 8), child: Badge(
                 badgeColor: Constants.appColor,
                 showBadge:
-                widget.event!.eventEnrolledByIds.isEmpty ? false : true,
+                widget.event.eventEnrolledByIds.isEmpty ? false : true,
                 position: BadgePosition.topEnd(top: 0, end: -8),
                 animationDuration: const Duration(milliseconds: 300),
                 animationType: BadgeAnimationType.fade,
                 badgeContent: Text(
                     NumberFormat.compact()
-                        .format(widget.event!.eventEnrolledByIds.length),
+                        .format(widget.event.eventEnrolledByIds.length),
                     style: const TextStyle(color: Colors.white)),
                 child: IconButton(
-                  onPressed: widget.event!.eventStatus == 'EXPIRED'
+                  onPressed: widget.event.eventStatus == 'EXPIRED'
                       ? null
                       : () async {
-                    if (widget.event!.eventEnrolledByIds
+                    if (widget.event.eventEnrolledByIds
                         .contains(currentUser.id)) {
-                      widget.event!.eventEnrolledByIds
+                      widget.event.eventEnrolledByIds
                           .remove(currentUser.id);
-                      await eventsRef.doc(widget.event!.eventId).update({
+                      await eventsRef.doc(widget.event.eventId).update({
                         'eventEnrolledByIds': List<dynamic>.from(
-                            widget.event!.eventEnrolledByIds)
+                            widget.event.eventEnrolledByIds)
                       });
                     } else {
-                      widget.event!.eventEnrolledByIds.add(currentUser.id);
-                      await eventsRef.doc(widget.event!.eventId).update({
+                      widget.event.eventEnrolledByIds.add(currentUser.id);
+                      await eventsRef.doc(widget.event.eventId).update({
                         'eventEnrolledByIds': List<dynamic>.from(
-                            widget.event!.eventEnrolledByIds)
+                            widget.event.eventEnrolledByIds)
                       });
                     }
                   },
@@ -299,7 +299,7 @@ class _EventWidgetState extends State<EventWidget> {
                     Icons.supervised_user_circle,
                     size: 35,
                     color:
-                    widget.event!.eventEnrolledByIds.contains(currentUser.id)
+                    widget.event.eventEnrolledByIds.contains(currentUser.id)
                         ? Constants.appColor
                         : Colors.grey,
                   ),

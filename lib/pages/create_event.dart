@@ -2,13 +2,12 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:giphy_picker/giphy_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../helpers/Constants.dart';
 import '../widgets/header.dart';
-import 'Home.dart';
+import 'home.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 
 class CreateEvent extends StatefulWidget {
@@ -67,7 +66,6 @@ class CreateEventState extends State<CreateEvent>
 
   @override
   void dispose() {
-    print('Disposing CreateEvent');
     super.dispose();
     // Clean up the controller when the Widget is disposed
     _eventNameTextEditingController.dispose();
@@ -128,8 +126,6 @@ class CreateEventState extends State<CreateEvent>
                                   top: 120.0, left: 100.0),
                               child: InkWell(
                                 onTap: () async {
-                                  print(Constants
-                                      .appSettings!.giphyKey![0]);
                                   var gif = await GiphyPicker.pickGif(
                                       context: context,
                                       apiKey: Constants
@@ -245,7 +241,7 @@ class CreateEventState extends State<CreateEvent>
                                           _eventDescriptionTextEditingController,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return 'Please enter a description for your event.';
+                                          return 'Please add some description.';
                                         }
                                         return null;
                                       },
@@ -257,7 +253,7 @@ class CreateEventState extends State<CreateEvent>
                                       maxLines: null,
                                       decoration: Constants
                                           .getTextFormFieldInputDecoration(
-                                              'Event description.'),
+                                              'Add description for your event.\nYou could also share social \nmedia URLs for your profile \nor post event info/pics.'),
                                       enabled: !_status,
                                       textInputAction: TextInputAction.done,
                                     ),
@@ -290,8 +286,7 @@ class CreateEventState extends State<CreateEvent>
                                         DatePicker.showDateTimePicker(context,
                                             showTitleActions: true,
                                             minTime: DateTime(2018, 3, 5),
-                                            maxTime: DateTime(2019, 6, 7), onChanged: (date) {
-                                              print('change $date');
+                                            maxTime: DateTime(2023, 6, 7), onChanged: (date) {
                                             }, onConfirm: (dateTime) {
                                               eventOccurrenceDateTime = dateTime;
                                             }, currentTime: DateTime.now(), locale: LocaleType.en);
@@ -325,6 +320,7 @@ class CreateEventState extends State<CreateEvent>
                             children: <Widget>[
                               Flexible(
                                 child: TextFormField(
+                                  keyboardType: TextInputType.number,
                                   // The validator receives the text that the user has entered.
                                   validator: (value) {
                                     if (value == null || value.isEmpty || int.tryParse(value) == null) {

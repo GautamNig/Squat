@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:squat/models/user.dart';
-import 'package:squat/pages/Home.dart';
+import 'package:squat/pages/home.dart';
 import 'package:squat/widgets/button_widget.dart';
 import 'package:squat/widgets/numbers_widget.dart';
 import 'package:squat/widgets/profile_widget.dart';
@@ -34,9 +34,9 @@ class _ProfilePageState extends State<ProfilePage> {
     var topSquatters =
         squattersList!.take(min + random.nextInt(max - min)).toList();
 
-    if (!topSquatters!.contains(widget.user)) topSquatters.add(widget.user);
+    if (!topSquatters.contains(widget.user)) topSquatters.add(widget.user);
 
-    data = topSquatters!
+    data = topSquatters
         .map((e) => _SquattersChartData(
             e.displayName,
             e.squatCount /

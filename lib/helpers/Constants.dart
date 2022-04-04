@@ -2,6 +2,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:squat/json_parsers/json_parser_firebase_appSettings.dart';
 
+import '../json_parsers/json_parser_nytimes_latest_world_news.dart';
+
 class Constants {
   static const Color appColor = Colors.teal;
   static const String nyTimesArticleSearchBaseUri = 'https://api.nytimes.com/svc/search/v2/articlesearch.json';
@@ -14,6 +16,8 @@ class Constants {
       fontSize: 30,
       color: Colors.white,
   );
+
+  static NYTimesLatestWorldNews? nYTimesLatestWorldNews;
 
   static createEventDetailscontainer(String text) {
     return Container(

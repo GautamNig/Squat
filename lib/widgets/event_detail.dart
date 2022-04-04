@@ -5,7 +5,7 @@ import 'package:flutter_countdown_timer/flutter_countdown_timer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../helpers/Constants.dart';
 import '../models/event.dart';
-import '../pages/Home.dart';
+import '../pages/home.dart';
 
 class EventDetail extends StatelessWidget {
   final Event event;
@@ -76,9 +76,9 @@ class EventDetail extends StatelessWidget {
 
     final topContent = Stack(
       children: <Widget>[
-        event!.giphyUrl.isNotEmpty
+        event.giphyUrl.isNotEmpty
             ? CachedNetworkImage(
-                imageUrl: event!.giphyUrl,
+                imageUrl: event.giphyUrl,
                 imageBuilder: (context, imageProvider) => Container(
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height * 0.5,
@@ -120,10 +120,11 @@ class EventDetail extends StatelessWidget {
       ],
     );
 
-    final bottomContentText = Text(
+    final bottomContentText = Padding(
+        padding: const EdgeInsets.only(top: 10.0),child: Text(
       event.eventDescription,
-      style: const TextStyle(fontSize: 18.0),
-    );
+      style: const TextStyle(fontSize: 18.0, fontStyle: FontStyle.italic),
+    ));
     // final readButton = Container(
     //     padding: const EdgeInsets.symmetric(vertical: 16.0),
     //     width: MediaQuery.of(context).size.width,

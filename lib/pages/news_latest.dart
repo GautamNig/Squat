@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:squat/pages/Home.dart';
+import 'package:squat/pages/home.dart';
 import 'package:squat/widgets/progress.dart';
 import '../helpers/Constants.dart';
 import '../json_parsers/json_parser_nytimes_articlesearch.dart';
@@ -20,14 +20,11 @@ class NewsLatest extends StatefulWidget {
 }
 
 class _NewsLatestState extends State<NewsLatest> {
-  NYTimesLatestWorldNews? nYTimesLatestWorldNews;
-  NYTimesArticleSearch? nYTimesArticleSearchResult;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    fetchNyTimesWorldLatestData();
   }
 
   @override
@@ -43,38 +40,21 @@ class _NewsLatestState extends State<NewsLatest> {
             ),
             centerTitle: true,
             backgroundColor: Theme.of(context).colorScheme.secondary,
-            actions: [
-              IconButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => const NewsPage()),
-                    );
-                  },
-                  icon: const Align(
-                      alignment: Alignment.topRight,
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(0, 8.0, 0, 0),
-                        child: FaIcon(
-                          FontAwesomeIcons.solidNewspaper,
-                          color: Colors.white,
-                        ),
-                      ))),
-            ],
           ),
-          body: (nYTimesLatestWorldNews != null &&
-                  nYTimesLatestWorldNews!.results != null)
+          body: (Constants.nYTimesLatestWorldNews != null &&
+                  Constants.nYTimesLatestWorldNews!.results != null)
               ? ListView.builder(
-                  itemCount: nYTimesLatestWorldNews!.results?.length,
+                  itemCount: Constants.nYTimesLatestWorldNews!.results?.length,
 
                   // display each item of the product list
                   itemBuilder: (context, index) {
-                    return nYTimesLatestWorldNews!.results![index].multimedia !=
+                    return Constants.nYTimesLatestWorldNews!.results![index].multimedia !=
                             null
-                        ? nYTimesLatestWorldNews!
+                        ? Constants.nYTimesLatestWorldNews!
                                 .results![index].multimedia!.isNotEmpty
                             ? Card(
                                 // In many cases, the key isn't mandatory
-                                child: nYTimesLatestWorldNews!
+                                child: Constants.nYTimesLatestWorldNews!
                                             .results![index].multimedia !=
                                         null
                                     ? Padding(
@@ -84,7 +64,7 @@ class _NewsLatestState extends State<NewsLatest> {
                                             FadeInImage.assetNetwork(
                                               placeholder:
                                                   'assets/images/loading.gif',
-                                              image: nYTimesLatestWorldNews!
+                                              image: Constants.nYTimesLatestWorldNews!
                                                   .results![index]
                                                   .multimedia!
                                                   .first
@@ -95,7 +75,7 @@ class _NewsLatestState extends State<NewsLatest> {
                                                   const EdgeInsets.symmetric(
                                                       vertical: 8.0),
                                               child: Text(
-                                                nYTimesLatestWorldNews!
+                                                Constants.nYTimesLatestWorldNews!
                                                     .results![index]
                                                     .multimedia!
                                                     .first
@@ -110,7 +90,7 @@ class _NewsLatestState extends State<NewsLatest> {
                                                   left: 4.0),
                                               child: Text(
                                                 timeago.format(DateTime.parse(
-                                                    nYTimesLatestWorldNews!
+                                                    Constants.nYTimesLatestWorldNews!
                                                         .results![index]
                                                         .publishedDate!)),
                                                 style: TextStyle(
@@ -133,21 +113,5 @@ class _NewsLatestState extends State<NewsLatest> {
             alignmentGeometry: Alignment.bottomLeft),
       ],
     );
-  }
-
-  void fetchNyTimesWorldLatestData() {
-    var uriToFetch =
-        '${Constants.nyTimesWorldLatestBaseUri}?&api-key=${Constants.appSettings!.nyTimesApiKey?.first}';
-
-    http.get(Uri.parse(uriToFetch)).then((value) {
-      setState(() {
-        nYTimesLatestWorldNews =
-            NYTimesLatestWorldNews.fromJson(jsonDecode(value.body));
-        // if (nYTimesLatestWorldNews!.results != null) {
-        //   nYTimesLatestWorldNews!.results
-        //       ?.sort((a, b) => b.publishedDate!.compareTo(a.publishedDate!));
-        // }
-      });
-    });
   }
 }

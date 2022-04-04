@@ -4,7 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../models/user.dart';
-import '../pages/Home.dart';
+import '../pages/home.dart';
 
 class PaypalPayment extends StatelessWidget {
   final double amount;
@@ -54,10 +54,10 @@ class PaypalPayment extends StatelessWidget {
 
             // Commit the batch
             usersRef
-                .doc(currentUser?.id)
+                .doc(currentUser.id)
                 .update({"amountDonated": donationTotal});
 
-            var doc = await usersRef.doc(currentUser?.id).get();
+            var doc = await usersRef.doc(currentUser.id).get();
             currentUser = User.fromDocument(doc);
           }
           if (request.url.contains('http://cancel_url')) {

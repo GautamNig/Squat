@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:badges/badges.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,7 +9,7 @@ import 'package:squat/widgets/progress.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:uuid/uuid.dart';
 import '../helpers/Constants.dart';
-import 'Home.dart';
+import 'home.dart';
 import 'package:giphy_picker/giphy_picker.dart';
 
 class Comments extends StatefulWidget {
@@ -31,7 +30,7 @@ class CommentsState extends State<Comments> {
   final String userId;
   GiphyGif? _gif;
   List<DocumentSnapshot> documents = [];
-  ScrollController _controller = ScrollController();
+  final ScrollController _controller = ScrollController();
 
   // String searchText = '';
 
@@ -100,9 +99,9 @@ class CommentsState extends State<Comments> {
       var commentId = const Uuid().v4();
       commentsRef.doc(commentId).set({
         "commentId": commentId,
-        "username": currentUser?.username,
-        "userId": currentUser?.id,
-        "photoUrl": currentUser?.photoUrl,
+        "username": currentUser.username,
+        "userId": currentUser.id,
+        "photoUrl": currentUser.photoUrl,
         "comment": commentTextEditingController.text,
         "giphyUrl": _gif == null ? '' : _gif?.images.original?.url,
         "timestamp": DateTime.now(),
@@ -340,18 +339,12 @@ class Comment extends StatelessWidget {
                         child: InkWell(
                           onTap: () async {
                             if (commentLikedByIds.contains(currentUser.id)) {
-                              // setState(() {
-                              //   thumbsUpColor = Colors.white;
-                              // });
                               commentLikedByIds.remove(currentUser.id);
                               await commentsRef.doc(commentId).update({
                                 'commentLikedByIds':
                                     List<dynamic>.from(commentLikedByIds)
                               });
                             } else {
-                              // setState(() {
-                              //   thumbsUpColor = Colors.pink;
-                              // });
                               commentLikedByIds.add(currentUser.id);
                               await commentsRef.doc(commentId).update({
                                 'commentLikedByIds':
