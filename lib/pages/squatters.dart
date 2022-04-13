@@ -147,16 +147,7 @@ class _UserWidgetState extends State<UserWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Expanded(
-              child: widget.user.isoCountryCode.isNotEmpty
-                  ? Flag.fromString(
-                      widget.user.isoCountryCode,
-                      height: 30,
-                      width: 30,
-                      replacement: Container(),
-                    )
-                  : const SizedBox(),
-            ),
+            getFlagForCountry(),
             (widget.user.locality.isEmpty || widget.user.country.isEmpty)
                 ? const SizedBox()
                 : Text(
@@ -177,5 +168,24 @@ class _UserWidgetState extends State<UserWidget> {
                 builder: (context) => ProfilePage(user: widget.user)));
       },
     );
+  }
+
+  Widget getFlagForCountry(){
+    try{
+      Flag flag = Flag.fromString(
+        widget.user.isoCountryCode,
+        height: 30,
+        width: 30,
+        replacement: Container(),
+      );
+
+      return Expanded(
+        child: widget.user.isoCountryCode.isNotEmpty
+            ? flag
+            : const SizedBox(),
+      );
+    }catch(e){
+      return const Expanded(child: SizedBox());
+    }
   }
 }

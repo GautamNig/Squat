@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import "package:intl/intl.dart";
 import 'package:cached_network_image/cached_network_image.dart';
@@ -17,9 +18,11 @@ import 'package:rxdart/rxdart.dart';
 import 'package:squat/pages/comments.dart';
 import 'package:squat/pages/donation.dart';
 import 'package:squat/pages/events.dart';
+import 'package:squat/pages/polls_view.dart';
 import 'package:squat/pages/squatters.dart';
 import '../helpers/Constants.dart';
 import '../json_parsers/json_parser_firebase_appSettings.dart';
+import '../models/poll.dart';
 import '../models/user.dart';
 import '../widgets/progress.dart';
 import 'create_account.dart';
@@ -35,9 +38,11 @@ final usersRef = FirebaseFirestore.instance.collection('users');
 final eventsRef = FirebaseFirestore.instance.collection('events');
 final commentsRef = FirebaseFirestore.instance.collection('comments');
 final appSettingsRef = FirebaseFirestore.instance.collection('settings');
+final pollsRef = FirebaseFirestore.instance.collection('polls');
 final random = Random();
 late User currentUser;
 List<User>? squattersList = [];
+List<Poll> pollsList = [];
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -96,6 +101,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
+    print('initialising');
     super.initState();
     activeCounter();
     animationController =
@@ -110,6 +116,12 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       querySnapshot.docs.forEach((doc) {
         squattersList?.add(User.fromDocument(doc));
       });
+
+      pollsRef.get().then((querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          //print(json.encode(doc.data()));
+          pollsList!.add(Poll.fromDocument(doc));
+        });});
 
       squatersCount =
           squattersList!.where((element) => element.squatCount > 0).length;
@@ -182,7 +194,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
 
     List<Placemark> placemarks = await GeocodingPlatform.instance
-        .placemarkFromCoordinates(position.latitude, position.longitude);
+        .placemarkFromCoordinates(position.latitude, position.longitude, localeIdentifier: "en");
     Placemark placemark = placemarks[0];
     squatLocality = placemark.locality ?? '';
     squatCountry = placemark.country ?? '';
@@ -589,6 +601,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                           Events(),
                           const NewsPage(),
                           const Donation(),
+                          PollView(),
                           // ActivityFeed(),
                           // Upload(currentUser:currentUser),
                           // Search(),
@@ -628,6 +641,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               icon: FaIcon(FontAwesomeIcons.earthAmericas, size: 24)),
           const BottomNavigationBarItem(
               icon: Icon(Icons.monetization_on_sharp)),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.how_to_vote_outlined)),
         ],
       ),
     );
