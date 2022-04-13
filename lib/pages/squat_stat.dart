@@ -18,7 +18,7 @@ class _SquatStatState extends State<SquatStat> {
   Widget build(BuildContext context) {
           List<SquatData> squatDataList = [];
 
-          var newMap = groupBy(
+          Map<String, List<User>> newMap = groupBy(
               squattersList!,
               (User obj) => obj.country);
 
