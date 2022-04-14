@@ -101,7 +101,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    print('initialising');
     super.initState();
     activeCounter();
     animationController =
@@ -119,7 +118,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
       pollsRef.get().then((querySnapshot) {
         querySnapshot.docs.forEach((doc) {
-          //print(json.encode(doc.data()));
           pollsList!.add(Poll.fromDocument(doc));
         });});
 

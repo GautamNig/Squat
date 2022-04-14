@@ -25,6 +25,21 @@ class _PollViewState extends State<PollView> {
   late TooltipBehavior _tooltip;
   late List<_ChartData> chartData;
   late Map<String, List<dynamic>> groupedData;
+  String searchKey = '';
+
+  Stream<QuerySnapshot> stream() async* {
+    var _stream = pollsRef.snapshots();
+    yield* _stream;
+  }
+
+  Stream<QuerySnapshot> searchData(String string) async* {
+    var _search = pollsRef
+        .where('pollTitle', isGreaterThanOrEqualTo: string)
+        .where('pollTitle', isLessThan: string + 'z')
+        .snapshots();
+
+    yield* _search;
+  }
 
   @override
   void initState() {
@@ -57,7 +72,9 @@ class _PollViewState extends State<PollView> {
       ),
       appBar: header(context, titleText: 'Polls'),
       body: StreamBuilder(
-          stream: pollsRef.snapshots(),
+          stream: (searchKey.isNotEmpty)
+              ? searchData(searchKey)
+              : stream(),
           builder: (context, AsyncSnapshot snapshot) {
             if (!snapshot.hasData) {
               return circularProgress();
@@ -75,6 +92,28 @@ class _PollViewState extends State<PollView> {
               var poll = Poll.fromDocument(doc);
               if (poll.voters.keys.contains(currentUser.id)) {
                 _selectedPoll = poll.options![poll.voters[currentUser.id]];
+              }
+
+              if (polls.isEmpty) {
+                polls.add(Column(
+                  children: [
+                    TextFormField(
+                      onChanged: (value) {
+                        setState(() {
+                          searchKey = value;
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        hintText: "Search for a poll",
+                        filled: true,
+                        prefixIcon: Icon(
+                          Icons.poll_outlined,
+                          size: 28.0,
+                        ),
+                      ),
+                    )
+                  ],
+                ));
               }
 
               polls.add(Column(
