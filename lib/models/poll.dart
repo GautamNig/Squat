@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Poll {
   String? pollId;
   String? pollTitle;
-  String? pollDescription;
+  String? pollImage;
   String? createdByUserId;
   String? createdByUsername;
   Timestamp? pollCreatedDateTime;
@@ -13,7 +13,7 @@ class Poll {
 
   Poll({required this.pollId,
     required this.pollTitle,
-    required this.pollDescription,
+    required this.pollImage,
     required this.createdByUserId,
     required this.createdByUsername,
     required this.pollCreatedDateTime,
@@ -24,7 +24,7 @@ class Poll {
   Poll.fromDocument(DocumentSnapshot snapshot) {
     pollId = snapshot['pollId'];
     pollTitle = snapshot['pollTitle'];
-    pollDescription = snapshot['pollDescription'];
+    pollImage = snapshot['pollImage'];
     createdByUserId = snapshot['createdByUserId'];
     createdByUsername = snapshot['createdByUsername'];
     pollCreatedDateTime = snapshot['pollCreatedDateTime'];

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class Overlay extends ModalRoute<void> {
+class ScreenOverlay extends ModalRoute<void> {
   @override
   Duration get transitionDuration => const Duration(milliseconds: 500);
 
@@ -21,7 +21,7 @@ class Overlay extends ModalRoute<void> {
 
   Widget content;
 
-  Overlay(this.content);
+  ScreenOverlay({required this.content});
 
   @override
   Widget buildPage(
@@ -56,7 +56,10 @@ class Overlay extends ModalRoute<void> {
 
   @override
   Widget buildTransitions(
-      BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      Widget child) {
     // You can add your own animations for the overlay content
     return FadeTransition(
       opacity: animation,

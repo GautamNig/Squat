@@ -600,8 +600,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                           Comments(userId: currentUser.id),
                           Events(),
                           const NewsPage(),
-                          const Donation(),
                           PollView(),
+                          const Donation(),
                           // ActivityFeed(),
                           // Upload(currentUser:currentUser),
                           // Search(),
@@ -640,9 +640,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           const BottomNavigationBarItem(
               icon: FaIcon(FontAwesomeIcons.earthAmericas, size: 24)),
           const BottomNavigationBarItem(
-              icon: Icon(Icons.monetization_on_sharp)),
-          const BottomNavigationBarItem(
               icon: Icon(Icons.how_to_vote_outlined)),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.monetization_on_sharp)),
         ],
       ),
     );

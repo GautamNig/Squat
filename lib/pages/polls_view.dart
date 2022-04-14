@@ -1,22 +1,20 @@
 import 'package:animations/animations.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:smart_select/smart_select.dart';
 import 'package:squat/pages/home.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../helpers/Constants.dart';
 import '../models/poll.dart';
 import '../widgets/header.dart';
+import '../widgets/screen_overlay.dart';
 import '../widgets/progress.dart';
 import 'create_poll.dart';
 
 class PollView extends StatefulWidget {
-  // final Poll poll;
-  //
-  // PollView({required this.poll}) : super();
   @override
   _PollViewState createState() => _PollViewState();
 }
@@ -75,7 +73,7 @@ class _PollViewState extends State<PollView> {
 
             documents.forEach((doc) {
               var poll = Poll.fromDocument(doc);
-              if(poll.voters.keys.contains(currentUser.id)){
+              if (poll.voters.keys.contains(currentUser.id)) {
                 _selectedPoll = poll.options![poll.voters[currentUser.id]];
               }
 
@@ -84,7 +82,69 @@ class _PollViewState extends State<PollView> {
                   const SizedBox(height: 7),
                   SmartSelect<String>.single(
                     title: poll.pollTitle,
+                    tileBuilder: (context, state) {
+                      return S2Tile.fromState(
+                        state,
+                        leading: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(ScreenOverlay(
+                                content: CachedNetworkImage(
+                              imageUrl: poll.pollImage!,
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                            )));
+                          },
+                          child: CachedNetworkImage(
+                            imageUrl: poll.pollImage!,
+                            imageBuilder: (context, imageProvider) => Container(
+                              width: 50.0,
+                              height: 50.0,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                image: DecorationImage(
+                                    image: imageProvider, fit: BoxFit.cover),
+                              ),
+                            ),
+                            placeholder: (context, url) =>
+                                const CircularProgressIndicator(),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.error),
+                          ),
+                        ),
+                        trailing: IconButton(
+                          onPressed: () {
+                            groupedData = groupBy(poll.voters.values,
+                                (dynamic obj) => obj.toString());
+
+                            chartData = groupedData.values
+                                .map((e) => _ChartData(poll.options![e.first],
+                                    (e.length / poll.voters.length) * 100))
+                                .toList();
+
+                            Navigator.of(context)
+                                .push(ScreenOverlay(content: makeChart()));
+                          },
+                          icon:
+                              const FaIcon(FontAwesomeIcons.squarePollVertical),
+                        ),
+                        isTwoLine: true,
+                      );
+                    },
+                    choiceStyle: const S2ChoiceStyle(
+                        titleStyle: TextStyle(fontStyle: FontStyle.italic)),
                     value: _selectedPoll,
+                    modalType: S2ModalType.bottomSheet,
+                    modalHeaderBuilder: (ctx, state) => const Padding(
+                      padding: EdgeInsets.only(top: 8.0),
+                      child: Text('Options :',
+                          style: TextStyle(
+                            fontFamily: "Signatra",
+                            fontSize: 25,
+                            color: Constants.appColor,
+                          )),
+                    ),
                     choiceItems: S2Choice.listFrom(
                       source: poll.options,
                       value: (index, item) => poll.options![index],
@@ -101,22 +161,7 @@ class _PollViewState extends State<PollView> {
                         pollsRef.doc(poll.pollId).update({
                           'voters.${currentUser.id}':
                               poll.options!.indexOf(_selectedPoll)
-                        }).then((value)  {
-                          groupedData =
-                                    groupBy(poll.voters.values, (dynamic obj) => obj.toString());
-
-                          chartData = groupedData.values.map((e) => _ChartData(poll.options![e.first],
-                                  (e.length/poll.voters.length)*100)).toList();
-                          
-                              showAlert(chartData);
-                            });
-                      }else{
-                        groupedData =
-                            groupBy(poll.voters.values, (dynamic obj) => obj.toString());
-
-                        chartData = groupedData.values.map((e) => _ChartData(poll.options![e.first],
-                            (e.length/poll.voters.length)*100)).toList();
-                              showAlert(chartData);
+                        });
                       }
                     }),
                   ),
@@ -132,37 +177,28 @@ class _PollViewState extends State<PollView> {
     );
   }
 
-  void showAlert(List<_ChartData> chartData) {
-    Alert(
-        context: context,
-        title: "Poll Stat",
-        content: SfCartesianChart(
-            primaryXAxis: CategoryAxis(),
-            primaryYAxis: NumericAxis(
-                minimum: 0,
-                maximum: 100,
-                interval: 5),
-            tooltipBehavior: _tooltip,
-            series: <ChartSeries<_ChartData, String>>[
-              ColumnSeries<_ChartData, String>(
-                  dataSource: chartData,
-                  xValueMapper:
-                      (_ChartData data, _) => data.x,
-                  yValueMapper:
-                      (_ChartData data, _) => data.y,
-                  name: 'Vote %',
-                  color: Constants.appColor)
-            ]),
-        buttons: [
-          DialogButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "Ok",
-              style: TextStyle(
-                  color: Colors.white, fontSize: 20),
+  SfCartesianChart makeChart() {
+    return SfCartesianChart(
+        primaryXAxis: CategoryAxis(
+            labelStyle: const TextStyle(
+                color: Colors.white, fontStyle: FontStyle.italic)),
+        primaryYAxis: NumericAxis(
+            labelStyle: const TextStyle(
+              color: Colors.white,
+              fontStyle: FontStyle.italic,
+              fontFamily: 'Roboto',
             ),
-          )
-        ]).show();
+            minimum: 0,
+            maximum: 100),
+        tooltipBehavior: _tooltip,
+        series: <ChartSeries<_ChartData, String>>[
+          ColumnSeries<_ChartData, String>(
+              dataSource: chartData,
+              xValueMapper: (_ChartData data, _) => data.x,
+              yValueMapper: (_ChartData data, _) => data.y,
+              name: 'Vote %',
+              color: Constants.appColor)
+        ]);
   }
 }
 

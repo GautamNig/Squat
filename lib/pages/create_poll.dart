@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:uuid/uuid.dart';
 import '../helpers/Constants.dart';
@@ -24,7 +25,7 @@ class CreatePollState extends State<CreatePoll>
 
   String pollId = '';
   final _pollTitleTextEditingController = TextEditingController();
-  final _pollDescriptionTextEditingController = TextEditingController();
+  final _pollImageTextEditingController = TextEditingController();
   final _pollDurationTextEditingController = TextEditingController();
 
   String pollDuration = '';
@@ -37,7 +38,7 @@ class CreatePollState extends State<CreatePoll>
     super.dispose();
 
     _pollTitleTextEditingController.dispose();
-    _pollDescriptionTextEditingController.dispose();
+    _pollImageTextEditingController.dispose();
 
     for (final controller in _controllers) {
       controller.dispose();
@@ -49,15 +50,17 @@ class CreatePollState extends State<CreatePoll>
     return SafeArea(
         child: Scaffold(
             resizeToAvoidBottomInset: true,
-            appBar: header(context, titleText: 'Add a Poll'),
+            appBar: header(context, titleText: 'Create a Poll'),
             floatingActionButton: FloatingActionButton(
-              onPressed: () {
+              onPressed: (_controllers.length >= 4 || _status) ? null : () {
                 final controller = TextEditingController();
                 final field = TextField(
+                  maxLength: 25,
                   controller: controller,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
                     labelText: "Option ${_controllers.length + 1}",
+                    errorText: _validateOptions() ? null : 'Add atleast 2 non-empty options for your poll.',
                   ),
                 );
 
@@ -72,17 +75,15 @@ class CreatePollState extends State<CreatePoll>
               physics: const BouncingScrollPhysics(),
               children: [
                 getUpperContent(),
-                Visibility(
-                    visible: _controllers.isEmpty,
-                    child: const Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 24),
-                      child: Text(
-                        'Add some options.',
-                        style: TextStyle(
-                            fontSize: 16, fontStyle: FontStyle.italic),
-                      ),
-                    )),
+                Padding(
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 24),
+                  child: Text(
+                     _controllers.isNotEmpty ? 'Options :' : 'Add some options.',
+                    style: const TextStyle(
+                        fontSize: 16, fontStyle: FontStyle.italic),
+                  ),
+                ),
                 _listView(),
                 !_status ? _getActionButtons() : Container(),
               ],
@@ -158,7 +159,7 @@ class CreatePollState extends State<CreatePoll>
                     mainAxisSize: MainAxisSize.max,
                     children: const <Widget>[
                       Text(
-                        'Poll',
+                        'Poll title',
                         style: TextStyle(
                             fontSize: 16.0, fontWeight: FontWeight.bold),
                       ),
@@ -197,12 +198,12 @@ class CreatePollState extends State<CreatePoll>
                 ),
                 Padding(
                   padding:
-                      const EdgeInsets.only(left: 25.0, right: 25.0, top: 15.0),
+                      const EdgeInsets.only(left: 25.0, right: 25.0, top: 2.0),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     children: const <Widget>[
                       Text(
-                        'Poll Description',
+                        'Poll Image',
                         style: TextStyle(
                             fontSize: 16.0, fontWeight: FontWeight.bold),
                       ),
@@ -217,21 +218,12 @@ class CreatePollState extends State<CreatePoll>
                     children: <Widget>[
                       Flexible(
                         child: TextFormField(
-                          minLines: 3,
-                          controller: _pollDescriptionTextEditingController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please add some description.';
-                            }
-                            return null;
-                          },
+                          controller: _pollImageTextEditingController,
                           onEditingComplete: () {
                             FocusScope.of(context).requestFocus(FocusNode());
                           },
-                          keyboardType: TextInputType.multiline,
-                          maxLines: null,
                           decoration: Constants.getTextFormFieldInputDecoration(
-                              'Add description for your poll.'),
+                              'Optionally provide an Image Url for your poll.'),
                           enabled: !_status,
                           textInputAction: TextInputAction.done,
                         ),
@@ -376,32 +368,14 @@ class CreatePollState extends State<CreatePoll>
       precacheImage(CachedNetworkImageProvider(urlImage), context);
 
   Future onProfilePageSaveClicked() async {
-    //await EasyLoading.show();
     if (await addPoll()) {
       Navigator.pop(context);
-    } else {
-      Alert(
-        context: context,
-        type: AlertType.error,
-        title: "Error",
-        desc: "Please add atleast 2 options for your poll.",
-        buttons: [
-          DialogButton(
-            child: const Text(
-              "Ok",
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-            onPressed: () => Navigator.pop(context),
-            width: 120,
-          )
-        ],
-      ).show();
     }
-    //await EasyLoading.dismiss();
   }
 
   addPoll() async {
-    if (_controllers.where((element) => element.text != "").length > 1) {
+    if (_validateOptions()) {
+      EasyLoading.show();
       var options = [];
       _controllers
           .where((element) => element.text != "").forEach((element) {
@@ -412,7 +386,7 @@ class CreatePollState extends State<CreatePoll>
       await pollsRef.doc(pollId).set({
         "pollId": pollId,
         "pollTitle": _pollTitleTextEditingController.text,
-        "pollDescription": _pollDescriptionTextEditingController.text,
+        "pollImage": _pollImageTextEditingController.text,
         "createdByUserId": currentUser.id,
         "createdByUsername": currentUser.displayName,
         "pollCreatedDateTime": DateTime.now(),
@@ -424,13 +398,17 @@ class CreatePollState extends State<CreatePoll>
         "voters": {}
       });
       _pollTitleTextEditingController.clear();
-      _pollDescriptionTextEditingController.clear();
+      _pollImageTextEditingController.clear();
       pollOccurrenceDateTime = DateTime.now();
       FocusManager.instance.primaryFocus?.unfocus();
-
+      EasyLoading.dismiss();
       return true;
     } else {
       return false;
     }
+  }
+
+  bool _validateOptions() {
+    return _controllers.where((element) => element.text != "").length > 1;
   }
 }
