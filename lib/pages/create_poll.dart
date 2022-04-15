@@ -210,26 +210,48 @@ class CreatePollState extends State<CreatePoll>
                     ],
                   ),
                 ),
-                Padding(
-                  padding:
-                      const EdgeInsets.only(left: 25.0, right: 25.0, top: 2.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      Flexible(
-                        child: TextFormField(
-                          controller: _pollImageTextEditingController,
-                          onEditingComplete: () {
-                            FocusScope.of(context).requestFocus(FocusNode());
-                          },
-                          decoration: Constants.getTextFormFieldInputDecoration(
-                              'Optionally provide an Image Url for your poll.'),
-                          enabled: !_status,
-                          textInputAction: TextInputAction.done,
-                        ),
+                Row(
+                  children: [
+                  Expanded(
+                    flex: 3,
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.only(left: 25.0, right: 5.0, top: 2.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Flexible(
+                            child: TextFormField(
+                              maxLines: 5,
+                              onChanged: (val){
+                                setState(() {
+                                _pollImageTextEditingController.text = val;
+                                });
+                              },
+                              controller: _pollImageTextEditingController,
+                              onEditingComplete: () {
+                                FocusScope.of(context).requestFocus(FocusNode());
+                              },
+                              decoration: Constants.getTextFormFieldInputDecoration(
+                                  'Optionally provide an Image Url for your poll.'),
+                              enabled: !_status,
+                              textInputAction: TextInputAction.done,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),),
+                    Expanded(
+                      flex: 2,
+                      child: Padding(padding: const EdgeInsets.fromLTRB(5, 5, 20, 5), child: CachedNetworkImage(
+                        imageUrl: _pollImageTextEditingController.text,
+                        placeholder: (context, url) =>
+                        const CircularProgressIndicator(),
+                        errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
+                      ),
+                    ),),
+                  ],
                 ),
                 Padding(
                   padding:
