@@ -176,16 +176,16 @@ class _UserWidgetState extends State<UserWidget> {
         widget.user.isoCountryCode,
         height: 30,
         width: 30,
-        replacement: Container(),
+        replacement: Container(width: 1),
       );
 
       return Expanded(
         child: widget.user.isoCountryCode.isNotEmpty
             ? flag
-            : const SizedBox(),
+            : Container(width: 1),
       );
     }catch(e){
-      return const Expanded(child: SizedBox());
+      return Container(width: 1);
     }
   }
 }

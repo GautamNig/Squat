@@ -118,7 +118,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
       pollsRef.get().then((querySnapshot) {
         querySnapshot.docs.forEach((doc) {
-          pollsList!.add(Poll.fromDocument(doc));
+          pollsList.add(Poll.fromDocument(doc));
         });});
 
       squatersCount =
@@ -594,11 +594,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                       'Akiko/Tom Fabre @Lottie Files',
                                       alignmentGeometry: Alignment.bottomLeft)
                                 ]),
-                          Squaters(),
                           Comments(userId: currentUser.id),
                           Events(),
                           PollView(),
                           const NewsPage(),
+                          Squaters(),
                           const Donation(),
                           // ActivityFeed(),
                           // Upload(currentUser:currentUser),
@@ -619,6 +619,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           const BottomNavigationBarItem(
             icon: Icon(Icons.whatshot),
           ),
+          const BottomNavigationBarItem(
+              icon: FaIcon(FontAwesomeIcons.solidCommentDots, size: 24)),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.event_available_rounded)),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.how_to_vote_outlined)),
+          const BottomNavigationBarItem(
+              icon: FaIcon(FontAwesomeIcons.earthAmericas, size: 24)),
           BottomNavigationBarItem(
             icon: Badge(
               child: const Icon(Icons.supervisor_account_sharp),
@@ -631,14 +639,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               ),
             ),
           ),
-          const BottomNavigationBarItem(
-              icon: FaIcon(FontAwesomeIcons.solidCommentDots, size: 24)),
-          const BottomNavigationBarItem(
-              icon: Icon(Icons.event_available_rounded)),
-          const BottomNavigationBarItem(
-              icon: Icon(Icons.how_to_vote_outlined)),
-          const BottomNavigationBarItem(
-              icon: FaIcon(FontAwesomeIcons.earthAmericas, size: 24)),
           const BottomNavigationBarItem(
               icon: Icon(Icons.monetization_on_sharp)),
         ],

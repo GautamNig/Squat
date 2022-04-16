@@ -84,8 +84,9 @@ class _PollViewState extends State<PollView> {
             documents = snapshot.data.docs;
 
             if (documents.isEmpty) {
-              return Image.asset('assets/images/notfound.png',
-                  fit: BoxFit.fill);
+              return Column(children: [Expanded(
+                child: Image.asset('assets/images/notfound.png',
+                    fit: BoxFit.fill))]);
             }
 
             documents.forEach((doc) {

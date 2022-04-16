@@ -31,8 +31,15 @@ class _NewsPageState extends State<NewsPage> {
   }
 
   @override
+  void setState(fn) {
+    if(mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return  (nYTimesArticleSearchResult != null &&
+    return  (nYTimesArticleSearchResult != null && nYTimesArticleSearchResult!.response != null &&
         nYTimesArticleSearchResult!.response!.docs != null
         && nYTimesArticleSearchResult!.response!.docs!.isNotEmpty)
         ? (nYTimesArticleSearchResult!
@@ -118,7 +125,7 @@ class _NewsPageState extends State<NewsPage> {
       fetchNyTimesData();
     });
     Future.delayed(const Duration(milliseconds: 6000), () {
-      setState(() {
+        setState(() {
         isPullToRefreshPerformed = false;
       });
     });
@@ -134,7 +141,7 @@ class _NewsPageState extends State<NewsPage> {
               NYTimesArticleSearch.fromJson(jsonDecode(value.body));
         });
 
-        if (nYTimesArticleSearchResult!.response != null &&
+        if (nYTimesArticleSearchResult != null && nYTimesArticleSearchResult!.response != null &&
             nYTimesArticleSearchResult!.response!.docs != null) {
           nYTimesArticleSearchResult!.response!.docs
               ?.sort((a, b) => b.pubDate!.compareTo(a.pubDate!));
@@ -147,7 +154,6 @@ class _NewsPageState extends State<NewsPage> {
         '${Constants.nyTimesWorldLatestBaseUri}?&api-key=${Constants.appSettings!.nyTimesApiKey?.first}';
 
     http.get(Uri.parse(uriToFetch)).then((value) {
-      if (mounted) {
         setState(() {
           Constants.nYTimesLatestWorldNews =
               NYTimesLatestWorldNews.fromJson(jsonDecode(value.body));
@@ -156,7 +162,6 @@ class _NewsPageState extends State<NewsPage> {
                 ?.sort((a, b) => b.publishedDate!.compareTo(a.publishedDate!));
           }
         });
-      }
     });
   }
 }

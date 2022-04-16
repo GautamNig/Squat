@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:uuid/uuid.dart';
 import '../helpers/Constants.dart';
@@ -51,26 +52,6 @@ class CreatePollState extends State<CreatePoll>
         child: Scaffold(
             resizeToAvoidBottomInset: true,
             appBar: header(context, titleText: 'Create a Poll'),
-            floatingActionButton: FloatingActionButton(
-              onPressed: (_controllers.length >= 4 || _status) ? null : () {
-                final controller = TextEditingController();
-                final field = TextField(
-                  maxLength: 25,
-                  controller: controller,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: "Option ${_controllers.length + 1}",
-                    errorText: _validateOptions() ? null : 'Add atleast 2 non-empty options for your poll.',
-                  ),
-                );
-
-                setState(() {
-                  _controllers.add(controller);
-                  _fields.add(field);
-                });
-              },
-              child: const Icon(Icons.add_circle_rounded),
-            ),
             body: ListView(
               physics: const BouncingScrollPhysics(),
               children: [
@@ -78,10 +59,32 @@ class CreatePollState extends State<CreatePoll>
                 Padding(
                   padding:
                   const EdgeInsets.symmetric(vertical: 8.0, horizontal: 24),
-                  child: Text(
-                     _controllers.isNotEmpty ? 'Options :' : 'Add some options.',
-                    style: const TextStyle(
-                        fontSize: 16, fontStyle: FontStyle.italic),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text(
+                         _controllers.isNotEmpty ? 'Options :' : 'Add some options.',
+                        style: const TextStyle(
+                            fontSize: 16, fontStyle: FontStyle.italic),
+                      ),
+                      IconButton(onPressed: (_controllers.length >= 4 || _status) ? null : () {
+                        final controller = TextEditingController();
+                        final field = TextField(
+                          maxLength: 25,
+                          controller: controller,
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            labelText: "Option ${_controllers.length + 1}",
+                            errorText: _validateOptions() ? null : 'Add atleast 2 non-empty options for your poll.',
+                          ),
+                        );
+
+                        setState(() {
+                          _controllers.add(controller);
+                          _fields.add(field);
+                        });
+                      }, icon: const FaIcon(FontAwesomeIcons.plus))
+                    ],
                   ),
                 ),
                 _listView(),
@@ -174,7 +177,7 @@ class CreatePollState extends State<CreatePoll>
                     children: <Widget>[
                       Flexible(
                         child: TextFormField(
-                          maxLength: 25,
+                          maxLength: 100,
                           // The validator receives the text that the user has entered.
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -233,7 +236,7 @@ class CreatePollState extends State<CreatePoll>
                                 FocusScope.of(context).requestFocus(FocusNode());
                               },
                               decoration: Constants.getTextFormFieldInputDecoration(
-                                  'Optionally provide an Image Url for your poll.'),
+                                  'Provide an Image Url for your poll.'),
                               enabled: !_status,
                               textInputAction: TextInputAction.done,
                             ),
